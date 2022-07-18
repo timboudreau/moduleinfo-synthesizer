@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <name>Module Info Synthesizer Parent</name>
+    <description>Bill of materials for jarmerge-moduleinfo-synthesizer</description>
 
     <modules>
         <module>jarmerge-moduleinfo-synthesizer</module>
