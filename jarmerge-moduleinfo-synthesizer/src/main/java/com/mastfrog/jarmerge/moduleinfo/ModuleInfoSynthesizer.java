@@ -120,7 +120,7 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
                 sb.append(sub);
             }
         }
-        if (sb.isEmpty()) {
+        if (sb.length() == 0) {
             sb.append("module.name.not.derived");
         }
         return sb.toString();
