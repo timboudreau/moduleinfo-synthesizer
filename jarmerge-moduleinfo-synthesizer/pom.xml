@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.mastfrog</groupId>
+        <version>1.0</version>
+        <artifactId>moduleinfo-synthesizer-parent</artifactId>
+    </parent>
+
+    <artifactId>jarmerge-moduleinfo-synthesizer</artifactId>
+    <version>1.0</version>
+
+    <description>
+        Extends smart-jar-merge and the maven-merge-configuration plugin to coalesce and synthesize
+        a correct module-info.class from modular, non-modular or mixed jars (with some caveats).
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.mastfrog</groupId>
+            <artifactId>smart-jar-merge</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-classfile</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mastfrog</groupId>
+            <artifactId>annotation-processors</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
