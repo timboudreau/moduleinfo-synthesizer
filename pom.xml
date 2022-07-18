@@ -118,6 +118,7 @@
         </dependencies>
     </dependencyManagement>
 
+    <url>https://github.com/timboudreau/moduleinfo-synthesizer</url>
     <inceptionYear>2022</inceptionYear>
 
     <scm>
