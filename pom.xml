@@ -135,6 +135,15 @@
         <url>https://mastfrog.com</url>
     </organization>
 
+    <developers>
+        <developer>
+            <id>timboudreau</id>
+            <name>Tim Boudreau</name>
+            <url>https://timboudreau.com</url>
+            <email>tim@timboudreau.com</email>
+        </developer>
+    </developers>
+
     <licenses>
         <license>
             <name>MIT</name>
