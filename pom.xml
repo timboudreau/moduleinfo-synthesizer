@@ -118,6 +118,7 @@
         </dependencies>
     </dependencyManagement>
 
+    <url>https://github.com/timboudreau/moduleinfo-synthesizer</url>
     <inceptionYear>2022</inceptionYear>
 
     <scm>
@@ -134,6 +135,15 @@
         <name>Mastfrog Technologies</name>
         <url>https://mastfrog.com</url>
     </organization>
+
+    <developers>
+        <developer>
+            <id>timboudreau</id>
+            <name>Tim Boudreau</name>
+            <url>https://timboudreau.com</url>
+            <email>tim@timboudreau.com</email>
+        </developer>
+    </developers>
 
     <licenses>
         <license>
