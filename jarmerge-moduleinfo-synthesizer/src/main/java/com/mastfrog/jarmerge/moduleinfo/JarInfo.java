@@ -23,20 +23,25 @@
  */
 package com.mastfrog.jarmerge.moduleinfo;
 
+import com.mastfrog.function.throwing.io.IOFunction;
 import com.mastfrog.jarmerge.MergeLog;
 import com.mastfrog.util.path.UnixPath;
 import java.io.IOException;
 import java.io.InputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Module;
 
 /**
@@ -122,7 +127,8 @@ class JarInfo implements Comparable<JarInfo> {
         return rawName().compareToIgnoreCase(o.rawName());
     }
 
-    void readServiceFile(String service, JarEntry entry, InputStream in, MergeLog log) throws IOException {
+    void readServiceFile(String service, JarFile file, JarEntry entry, 
+            InputStream in, MergeLog log, boolean checkServiceConstructors) throws IOException {
         Set<String> svcs = services(service);
         String content = new String(in.readAllBytes(), UTF_8);
         String[] lines = content.split("\n");
@@ -131,7 +137,57 @@ class JarInfo implements Comparable<JarInfo> {
             if (l.isEmpty() || l.charAt(0) == '#') {
                 continue;
             }
-            svcs.add(l);
+            // Some hadoop jars hack ServiceLoader to get things instantiated
+            // with arguments - this will never work in the module system, so
+            // omit such unsound service registrations
+            if (!checkServiceConstructors || hasDefaultConstructor(service, file, l)) {
+                svcs.add(l);
+            }
         }
+    }
+
+    private boolean hasDefaultConstructor(String service, JarFile file, String implementationClass) throws IOException {
+        Boolean result = withPermutations(service, (classFilePath) -> {
+            ZipEntry en = file.getEntry(service.replace('.', '/') + ".class");
+            if (en != null) {
+                try ( InputStream in = file.getInputStream(en)) {
+                    ClassFile cf = new ClassFile(in);
+                    System.out.println("SCAN " + cf.getSourceFileName() + " for constructors");
+                    for (Method m : cf.getMethods()) {
+                        if (m.isPublic()) {
+                            System.out.println("  CHECK '" + m.getName() + "'");
+                            if ("<init>".equals(m.getName())) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            // null = keep trying other permutations
+            return null;
+        });
+        return result;
+    }
+
+    private static boolean withPermutations(String serviceClassName, IOFunction<String, Boolean> f) throws IOException {
+        // There are a few legal forms a class name could be transmuted into - such ass
+        // com.foo.MyClass.MyNestedClass -> com.foo.MyClass$MyNestedClass which would
+        // be com/foo/MyClass$MyNestedClass in the jar
+        List<String> all = new ArrayList<>(3);
+        String baseSlashes = serviceClassName.replace('.', '/');
+        all.add(baseSlashes + ".class");
+        int ix = baseSlashes.lastIndexOf('.');
+        if (ix > 0 && ix < baseSlashes.length() - 1) {
+            char[] c = baseSlashes.toCharArray();
+            c[ix] = '$';
+            all.add(new String(c) + ".class");
+        }
+        for (String s : all) {
+            Boolean result = f.apply(s);
+            if (result != null) {
+                return result;
+            }
+        }
+        return false;
     }
 }

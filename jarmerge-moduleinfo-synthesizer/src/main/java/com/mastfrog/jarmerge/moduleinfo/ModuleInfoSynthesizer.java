@@ -43,6 +43,8 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     public static final String PROP_MODULE_NAME = "moduleName";
     public static final String PROP_OPEN_MODULE = "openModule";
+    public static final String PROP_CHECK_SERVICE_CONSTRUCTORS
+            = "checkServiceConstructors";
     private final JarMerge merge;
     private boolean zeroDates;
     private ModuleInfoCollector collector;
@@ -81,6 +83,15 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
         }
         String val = merge.extensionProperties.get(PROP_OPEN_MODULE);
         return val == null ? true : "true".equals(val.trim());
+    }
+
+    boolean checkServiceConstructors() {
+        if (merge == null) {
+            return false;
+        }
+        String val = merge.extensionProperties.getOrDefault(
+                PROP_CHECK_SERVICE_CONSTRUCTORS, "false");
+        return "true".equals(val);
     }
 
     @Override
@@ -135,7 +146,8 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     private synchronized ModuleInfoCollector collector() {
         if (collector == null) {
-            collector = new ModuleInfoCollector(moduleName(), zeroDates, open());
+            collector = new ModuleInfoCollector(moduleName(), zeroDates, open(),
+                    checkServiceConstructors());
         }
         return collector;
     }
@@ -187,12 +199,14 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     @Override
     public String description() {
-        return "Reads the bytecode of all found module-info.class files and syntesizes a merged version";
+        return "Reads the bytecode of all found module-info.class files and "
+                + "synthesizes a merged version";
     }
 
     @Override
     public boolean supersedes(JarFilter<?> other) {
-        return other.as(OmitModuleInfo.class) != null || other.as(ConcatenateMetaInfServices.class) != null;
+        return other.as(OmitModuleInfo.class) != null
+                || other.as(ConcatenateMetaInfServices.class) != null;
     }
 
     @Override

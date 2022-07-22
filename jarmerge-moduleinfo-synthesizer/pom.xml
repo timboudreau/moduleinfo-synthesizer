@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>jarmerge-moduleinfo-synthesizer</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 
     <description>
         Extends smart-jar-merge and the maven-merge-configuration plugin to coalesce and synthesize

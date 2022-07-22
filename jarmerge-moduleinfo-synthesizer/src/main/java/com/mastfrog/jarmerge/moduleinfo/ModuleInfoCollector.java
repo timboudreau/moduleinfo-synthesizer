@@ -75,11 +75,14 @@ class ModuleInfoCollector implements Coalescer {
     private final Map<String, Coalescer> serviceCoalescers = new HashMap<>();
     boolean written;
     private final boolean open;
+    private final boolean checkServiceConstructors;
 
-    ModuleInfoCollector(String name, boolean zeroDates, boolean open) {
+    ModuleInfoCollector(String name, boolean zeroDates, boolean open, 
+            boolean checkServiceConstructors) {
         this.moduleName = name;
         this.zeroDates = zeroDates;
         this.open = open;
+        this.checkServiceConstructors = checkServiceConstructors;
     }
 
     private JarInfo infoFor(Path path) {
@@ -97,7 +100,7 @@ class ModuleInfoCollector implements Coalescer {
             infoFor(jar).readModuleInfo(entry, file, in, log);
             return true;
         } else if (entry.getName().startsWith("META-INF/services/") && !entry.isDirectory()) {
-            noteServiceFile(entry.getName(), jar, entry, in, log);
+            noteServiceFile(entry.getName(), file, jar, entry, in, log);
             return true;
         }
         return false;
@@ -179,11 +182,17 @@ class ModuleInfoCollector implements Coalescer {
     }
 
     Coalescer wrap(String path, Path inJar, JarEntry entry, MergeLog log) {
-        Coalescer del = this.servicesConcat.findCoalescer(path, inJar, entry, log);
-        if (del != null) {
-            Coalescer coa = new WrappedCoalescer(del);
-            serviceCoalescers.put(coa.path(), coa);
-            return coa;
+        Coalescer del;
+        if (serviceCoalescers.containsKey(path)) {
+            del = serviceCoalescers.get(path);
+            return del;
+        } else {
+            Coalescer coa = this.servicesConcat.findCoalescer(path, inJar, entry, log);
+            if (coa != null) {
+                del = new WrappedCoalescer(coa);
+                serviceCoalescers.put(path, del);
+                return del;
+            }
         }
         return null;
     }
@@ -303,10 +312,11 @@ class ModuleInfoCollector implements Coalescer {
         }
     }
 
-    void noteServiceFile(String path, Path inJar, JarEntry entry, InputStream in, MergeLog log) throws IOException {
+    void noteServiceFile(String path, JarFile file, Path inJar, JarEntry entry, InputStream in, MergeLog log) throws IOException {
         String service = path.substring("META-INF/services/".length());
         JarInfo info = infoFor(inJar);
-        info.readServiceFile(service, entry, in, log);
+        info.readServiceFile(service, file, entry, in, log, 
+                checkServiceConstructors);
     }
 
 }

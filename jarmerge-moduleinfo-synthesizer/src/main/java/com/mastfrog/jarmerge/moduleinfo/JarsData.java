@@ -23,6 +23,7 @@
  */
 package com.mastfrog.jarmerge.moduleinfo;
 
+import static com.mastfrog.jarmerge.moduleinfo.ModuleEntry.canonicalize;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -79,7 +80,7 @@ class JarsData {
         into.append('\n');
         for (String u : uses) {
             into.append(lineHead);
-            into.append("uses ").append(u).append(';');
+            into.append("uses ").append(canonicalize(u)).append(';');
         }
         if (!open) {
             List<Open> synthetic = new ArrayList<>();

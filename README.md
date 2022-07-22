@@ -27,7 +27,28 @@ All that is needed to use it via Maven is to use the `maven-merge-configuration`
 Usage
 -----
 
-The most straightforward way is via the merge configuration plugin:
+The most straightforward way is via the merge configuration maven plugin - the
+following three properties may be added to `<extensionProperties>` in its configuration,
+along with adding this project as a plugin dependency:
+
+  * `moduleName` - spell out the module name you want it to put in the module declaration
+  * `openModule` - if true, declare the module as `open` - if false, `opens` entries from
+    any modular jars you include will be used, and entries will by synthesized for every
+    package in any non-modular jars you are combining with them
+  * `checkServiceConstructors` - we generate `provides` entries from `META-INF/services`
+    service registration files in the JARs we scan.  However, some projects (hadoop, for one)
+    include service registration files for types that do not have a default constructor
+    and cannot be loaded from the JDK's `ServiceLoader` (they likely use their own mechanism
+    for loading them).  `provides` entries for such classes will be uncompilable.  If this
+    property is set to true, we will examine the bytecode of each service implementation
+    being registered (assuming it exists) and omit any that do not have a public, no-arg
+    constructor - at the price of slowing down jar-merging slightly.
+
+Note:  _If you are trying to merge a bunch of non-modular JARs and turn them into a module,
+there needs to be at least _one_ `module-info.class` present for generation to happen
+at all - assuming you have a java project that is declaring all the dependencies you want
+merged, just add an empty `module-info.java` in the source root of that to get a modular
+jar for output.
 
 ```xml
             <plugin>
@@ -52,6 +73,7 @@ The most straightforward way is via the merge configuration plugin:
                     <extensionProperties>
                         <moduleName>org.moo.bwerg</moduleName>
                         <openModule>false</openModule>
+                        <checkServiceConstructors>true</checkServiceConstructors>
                     </extensionProperties>
                     <manifestEntries>
                         <Wurble-Snacks>Snugwuzzit</Wurble-Snacks>

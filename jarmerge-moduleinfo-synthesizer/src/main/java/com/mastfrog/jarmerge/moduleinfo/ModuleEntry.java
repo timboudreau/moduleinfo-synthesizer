@@ -36,7 +36,7 @@ abstract class ModuleEntry<E extends ModuleEntry<E>> implements Comparable<Modul
     }
 
     String target() {
-        return target;
+        return canonicalize(target);
     }
 
     E cast() {
@@ -50,5 +50,13 @@ abstract class ModuleEntry<E extends ModuleEntry<E>> implements Comparable<Modul
     @Override
     public int compareTo(ModuleEntry<?> o) {
         return target().compareTo(o.target());
+    }
+    
+    protected static String canonicalize(String what) {
+        int ix = what.indexOf('$');
+        if (ix > 0 && ix < what.length()-1) {
+            return what.replace('$', '.');
+        }
+        return what;
     }
 }

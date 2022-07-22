@@ -62,7 +62,7 @@ class Prov extends ModuleEntry<Prov> {
         for (Iterator<String> it = implementations.iterator(); it.hasNext();) {
             sb.append("\n         ");
             String i = it.next();
-            sb.append(i);
+            sb.append(canonicalize(i));
             if (it.hasNext()) {
                 sb.append(", ");
             }
