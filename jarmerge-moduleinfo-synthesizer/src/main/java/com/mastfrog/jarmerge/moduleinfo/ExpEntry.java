@@ -26,6 +26,7 @@ package com.mastfrog.jarmerge.moduleinfo;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 /**
  *
@@ -50,11 +51,11 @@ class ExpEntry extends ModuleEntry<ExpEntry> {
     }
 
     @Override
-    void apply(StringBuilder sb) {
+    void apply(StringBuilder sb, Function<String, String> transformer) {
         if ("java.base".equals(target())) {
             return;
         }
-        sb.append("exports ").append(target());
+        sb.append("exports ").append(transformer.apply(target()));
         if (!to.isEmpty()) {
             sb.append(" to");
             for (Iterator<String> it = to.iterator(); it.hasNext();) {

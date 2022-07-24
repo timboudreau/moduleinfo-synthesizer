@@ -23,6 +23,8 @@
  */
 package com.mastfrog.jarmerge.moduleinfo;
 
+import java.util.function.Function;
+
 /**
  *
  * @author Tim Boudreau
@@ -45,16 +47,16 @@ abstract class ModuleEntry<E extends ModuleEntry<E>> implements Comparable<Modul
 
     abstract E coalesce(E other);
 
-    abstract void apply(StringBuilder output);
+    abstract void apply(StringBuilder output, Function<String, String> transformer);
 
     @Override
     public int compareTo(ModuleEntry<?> o) {
         return target().compareTo(o.target());
     }
-    
+
     protected static String canonicalize(String what) {
         int ix = what.indexOf('$');
-        if (ix > 0 && ix < what.length()-1) {
+        if (ix > 0 && ix < what.length() - 1) {
             return what.replace('$', '.');
         }
         return what;

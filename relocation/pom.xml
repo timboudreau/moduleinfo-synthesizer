@@ -1,29 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.mastfrog</groupId>
-        <version>1.0.2</version>
         <artifactId>moduleinfo-synthesizer-parent</artifactId>
+        <version>1.0.2</version>
     </parent>
-
-    <artifactId>jarmerge-moduleinfo-synthesizer</artifactId>
-    <name>jarmerge-moduleinfo-synthesizer</name>
-
-    <description>
-        Extends smart-jar-merge and the maven-merge-configuration plugin to coalesce and synthesize
-        a correct module-info.class from modular, non-modular or mixed jars (with some caveats).
-    </description>
-
+    <artifactId>jarmerge-relocation</artifactId>
+    <name>jarmerge-relocation</name>
+    <description>Experimental class relocation</description>
     <dependencies>
         <dependency>
             <groupId>com.mastfrog</groupId>
             <artifactId>smart-jar-merge</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-modules-classfile</artifactId>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
         </dependency>
         <dependency>
             <groupId>com.mastfrog</groupId>

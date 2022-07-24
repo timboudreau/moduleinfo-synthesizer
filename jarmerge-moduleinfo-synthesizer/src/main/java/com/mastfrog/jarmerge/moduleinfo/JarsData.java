@@ -24,6 +24,7 @@
 package com.mastfrog.jarmerge.moduleinfo;
 
 import static com.mastfrog.jarmerge.moduleinfo.ModuleEntry.canonicalize;
+import com.mastfrog.jarmerge.spi.ClassNameRewriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,30 +53,31 @@ class JarsData {
     }
 
     void write(StringBuilder into) {
+        ClassNameRewriter rew = ClassNameRewriter.get();
         String lineHead = "\n    ";
         requires.forEach((name, req) -> {
             if (coalescedModuleNames.contains(req.target())) {
                 return;
             }
             into.append(lineHead);
-            req.apply(into);
+            req.apply(into, rew);
         });
         into.append('\n');
         exports.forEach((name, req) -> {
             into.append(lineHead);
-            req.apply(into);
+            req.apply(into, rew);
         });
         if (!open) {
             into.append('\n');
             opens.forEach((name, req) -> {
                 into.append(lineHead);
-                req.apply(into);
+                req.apply(into, rew);
             });
         }
         into.append('\n');
         provides.forEach((name, req) -> {
             into.append(lineHead);
-            req.apply(into);
+            req.apply(into, rew);
         });
         into.append('\n');
         for (String u : uses) {
@@ -95,7 +97,7 @@ class JarsData {
                 into.append("    // synthetic entries\n");
                 for (Open op : synthetic) {
                     into.append(lineHead);
-                    op.apply(into);
+                    op.apply(into, rew);
                 }
             }
         }

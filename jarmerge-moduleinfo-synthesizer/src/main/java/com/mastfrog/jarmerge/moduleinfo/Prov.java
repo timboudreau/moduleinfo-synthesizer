@@ -26,6 +26,7 @@ package com.mastfrog.jarmerge.moduleinfo;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Module;
 
@@ -57,12 +58,12 @@ class Prov extends ModuleEntry<Prov> {
     }
 
     @Override
-    void apply(StringBuilder sb) {
-        sb.append("provides ").append(target).append(" with ");
+    void apply(StringBuilder sb, Function<String, String> transformer) {
+        sb.append("provides ").append(transformer.apply(target)).append(" with ");
         for (Iterator<String> it = implementations.iterator(); it.hasNext();) {
             sb.append("\n         ");
             String i = it.next();
-            sb.append(canonicalize(i));
+            sb.append(transformer.apply(canonicalize(i)));
             if (it.hasNext()) {
                 sb.append(", ");
             }

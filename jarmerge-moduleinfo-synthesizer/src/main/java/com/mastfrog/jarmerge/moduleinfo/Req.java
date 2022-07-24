@@ -23,6 +23,7 @@
  */
 package com.mastfrog.jarmerge.moduleinfo;
 
+import java.util.function.Function;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.Module;
 
@@ -70,7 +71,7 @@ class Req extends ModuleEntry<Req> {
     }
 
     @Override
-    void apply(StringBuilder sb) {
+    void apply(StringBuilder sb, Function<String, String> ignored) {
         sb.append("requires ");
         if ((flags & Access.TRANSITIVE) != 0) {
             sb.append("transitive ");

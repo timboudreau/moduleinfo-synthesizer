@@ -26,6 +26,7 @@ package com.mastfrog.jarmerge.moduleinfo;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.netbeans.modules.classfile.Module;
 
 /**
@@ -53,8 +54,8 @@ class Open extends ModuleEntry<Open> {
     }
 
     @Override
-    void apply(StringBuilder sb) {
-        sb.append("opens ").append(target);
+    void apply(StringBuilder sb, Function<String, String> transformer) {
+        sb.append("opens ").append(transformer.apply(target));
         if (!opensTo.isEmpty()) {
             sb.append(" to ");
             for (Iterator<String> it = opensTo.iterator(); it.hasNext();) {

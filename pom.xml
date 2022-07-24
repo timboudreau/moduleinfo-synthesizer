@@ -6,18 +6,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mastfrog</groupId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <artifactId>moduleinfo-synthesizer-parent</artifactId>
     <packaging>pom</packaging>
 
     <name>Module Info Synthesizer Parent</name>
-    <description>Bill of materials for jarmerge-moduleinfo-synthesizer</description>
+    <description>
+        Bill of materials for jarmerge-moduleinfo-synthesizer and friends
+    </description>
 
     <modules>
         <module>jarmerge-moduleinfo-synthesizer</module>
+        <module>relocation</module>
     </modules>
 
     <properties>
+        <asm.version>9.3</asm.version>
         <mastfrog.version>2.8.3</mastfrog.version>
         <junit5.version>5.8.2</junit5.version>
         <netbeans.version>RELEASE126</netbeans.version>
@@ -79,12 +83,22 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>smart-jar-merge</artifactId>
-                <version>${mastfrog.version}.1</version>
+                <version>${mastfrog.version}.2</version>
             </dependency>
             <dependency>
                 <groupId>org.netbeans.api</groupId>
                 <artifactId>org-netbeans-modules-classfile</artifactId>
                 <version>RELEASE126</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-commons</artifactId>
+                <version>${asm.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.telenav.cactus</groupId>
