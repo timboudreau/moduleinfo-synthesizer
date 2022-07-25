@@ -88,6 +88,9 @@ public final class ClassRelocatingJarFilter implements JarFilter<Coalescer> {
     }
 
     public String transformPackage(String path) {
+        if ("module-info.class".equals(path)) {
+            return "";
+        }
         UnixPath up = UnixPath.get(path);
         if ("class".equals(up.extension())) {
             if (up.getNameCount() == 1) {
@@ -112,6 +115,9 @@ public final class ClassRelocatingJarFilter implements JarFilter<Coalescer> {
                 logged = true;
                 log.warn("jarmerge-relocation is on classpath but no packages are configured to relocate - will not run.");
             }
+            return null;
+        }
+        if ("module-info.class".equals(path)) {
             return null;
         }
         if (!entry.isDirectory() && path.endsWith(".class")) {
@@ -141,7 +147,7 @@ public final class ClassRelocatingJarFilter implements JarFilter<Coalescer> {
 
     @Override
     public int precedence() {
-        return 10;
+        return 2000;
     }
 
     @Override
@@ -187,6 +193,9 @@ public final class ClassRelocatingJarFilter implements JarFilter<Coalescer> {
         public String apply(String t) {
             if (t == null) {
                 return null;
+            }
+            if ("module-info".equals(t) || "module-info.class".equals(t)) {
+                return t;
             }
             if (coas != null) {
                 String arg = t;

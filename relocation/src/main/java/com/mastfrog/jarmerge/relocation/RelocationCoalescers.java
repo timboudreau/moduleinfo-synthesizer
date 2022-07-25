@@ -116,7 +116,15 @@ final class RelocationCoalescers {
         if (what == null) {
             return null;
         }
-        return TypeNameUtils.remapNested(what, this::simpleRemap);
+        boolean trailingV = what.endsWith(")V");
+        if (trailingV) {
+            what = what.substring(0, what.length() - 1);
+        }
+        String result = TypeNameUtils.remapNested(what, this::simpleRemap);
+        if (trailingV) {
+            result += "V";
+        }
+        return result.replaceAll(",;", ";").replaceAll("\\(>", ">(");
     }
 
     public String remapPackage(String pkg) {
@@ -258,7 +266,7 @@ final class RelocationCoalescers {
             }
             try {
                 return super.mapSignature(signature, typeSignature);
-            } catch (IllegalArgumentException iae) {
+            } catch (IllegalArgumentException | StringIndexOutOfBoundsException iae) {
                 throw new IllegalArgumentException("Bad signature remap '"
                         + orig + "' -> '" + signature + "'", iae);
             }

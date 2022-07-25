@@ -53,6 +53,9 @@ final class RelocationCoalescer implements Coalescer {
 
     @Override
     public String path() {
+        if ("module-info.class".equals(originalPath())) {
+            return originalPath();
+        }
         return entry.newJarEntryName();
     }
 

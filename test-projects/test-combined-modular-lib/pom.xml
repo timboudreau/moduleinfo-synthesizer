@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.mastfrog.test</groupId>
+        <artifactId>jarmerge-extensions-test-projects</artifactId>
+        <version>1.0.2</version>
+    </parent>
+    <artifactId>test-combined-modular-lib</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.mastfrog.test</groupId>
+            <artifactId>test-modular-service-lib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mastfrog.test</groupId>
+            <artifactId>test-reloclib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mastfrog.test</groupId>
+            <artifactId>test-modularlib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mastfrog.test</groupId>
+            <artifactId>test-second-modular-lib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mastfrog.test</groupId>
+            <artifactId>test-non-modular-service-exporter</artifactId>
+        </dependency>
+        
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mastfrog</groupId>
+                <artifactId>maven-merge-configuration</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.mastfrog</groupId>
+                        <artifactId>jarmerge-relocation</artifactId>
+                        <version>${moduleinfo-synthesizer-parent.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.mastfrog</groupId>
+                        <artifactId>jarmerge-moduleinfo-synthesizer</artifactId>
+                        <version>${moduleinfo-synthesizer-parent.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.mastfrog</groupId>
+                        <artifactId>smart-jar-merge</artifactId>
+                        <version>${smart-jar-merge.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>merge-configuration</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier></classifier>
+                            <mainClass>com.mastfrog.test.combined.TestCombinedModularLib</mainClass>
+                            <extensionProperties>
+                                <moduleName>org.blerg.blarg</moduleName>
+                                <defaultPackageDest>wasdefaultopackage</defaultPackageDest>
+<!--                                <package:com.mastfrog.reloclib>urble.libs</package:com.mastfrog.reloclib>
+                                <package:com.mastfrog.reloctest>mug.wurbles</package:com.mastfrog.reloctest>-->
+                                <!--<package:org.foober.goesaway>i.was.moved</package:org.foober.goesaway>-->
+                            </extensionProperties>
+                            <manifestEntries>
+                                <Random-Key>random.value</Random-Key>
+                            </manifestEntries>
+                            <skipLicenseFiles>true</skipLicenseFiles>
+                            <skipMavenMetadata>true</skipMavenMetadata>
+                            <replacePom>true</replacePom>
+                            <openModule>false</openModule>
+                        </configuration>
+                        <inherited>true</inherited>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -18,17 +18,21 @@
     <modules>
         <module>jarmerge-moduleinfo-synthesizer</module>
         <module>relocation</module>
+        <module>test-projects</module>
     </modules>
 
     <properties>
         <asm.version>9.3</asm.version>
-        <mastfrog.version>2.8.3</mastfrog.version>
-        <junit5.version>5.8.2</junit5.version>
-        <netbeans.version>RELEASE126</netbeans.version>
         <cactus.version>1.5.18</cactus.version>
+        <junit5.version>5.8.2</junit5.version>
+        <mastfrog.version>2.8.3</mastfrog.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <maven-merge-configuration-plugin.version>${mastfrog.version}.1</maven-merge-configuration-plugin.version>
+        <moduleinfo-synthesizer-parent.version>1.0.2</moduleinfo-synthesizer-parent.version>
+        <netbeans.version>RELEASE126</netbeans.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <smart-jar-merge.version>${mastfrog.version}.2</smart-jar-merge.version>
     </properties>
 
     <build>
@@ -37,12 +41,22 @@
                 <plugin>
                     <groupId>com.mastfrog</groupId>
                     <artifactId>maven-merge-configuration</artifactId>
-                    <version>${mastfrog.version}</version>
+                    <version>${maven-merge-configuration-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.mastfrog</groupId>
+                    <artifactId>jarmerge-moduleinfo-synthesizer</artifactId>
+                    <version>${moduleinfo-synthesizer-parent.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.mastfrog</groupId>
+                    <artifactId>jarmerge-relocation</artifactId>
+                    <version>${moduleinfo-synthesizer-parent.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>3.10.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -60,6 +74,11 @@
                     <version>1.6</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <version>1.6.13</version>
@@ -69,21 +88,64 @@
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
-
-                        <!-- <skipStagingRepositoryClose>true</skipStagingRepositoryClose> -->
-
                     </configuration>
                 </plugin>
 
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>&gt;=3.6.0</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>&gt;=11</version>
+                                </requireJavaVersion>
+                                <DependencyConvergence/>
+                                <banDuplicatePomDependencyVersions/>
+                                <reactorModuleConvergence>
+                                    <message>Reactor module convergence failure.</message>
+                                    <ignoreModuleDependencies>true</ignoreModuleDependencies>
+                                </reactorModuleConvergence>    
+                                <requireReleaseDeps>
+                                    <message>Snapshot dependencies not allowed.</message>
+                                </requireReleaseDeps>
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <excludes>
+                                        <!--
+                                            Some aggressively stupid bug in NetBeans Maven web
+                                            project support will randomly insert this into projects
+                                            with no notification, so catch it early so it can be
+                                            ripped out.
+                                        -->
+                                        <exclude>org.seleniumhq.selenium:selenium-java</exclude>
+                                        <exclude>com.opera:operadriver</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>            
+        </plugins>
     </build>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>smart-jar-merge</artifactId>
-                <version>${mastfrog.version}.2</version>
+                <version>${smart-jar-merge.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.netbeans.api</groupId>
@@ -103,7 +165,7 @@
             <dependency>
                 <groupId>com.telenav.cactus</groupId>
                 <artifactId>cactus-maven-xml</artifactId>
-                <version>1.5.18</version>
+                <version>${cactus.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.mastfrog</groupId>

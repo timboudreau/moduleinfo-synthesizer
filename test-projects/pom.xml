@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.mastfrog</groupId>
+        <artifactId>moduleinfo-synthesizer-parent</artifactId>
+        <version>1.0.2</version>
+    </parent>
+
+    <groupId>com.mastfrog.test</groupId>
+    <artifactId>jarmerge-extensions-test-projects</artifactId>
+
+    <packaging>pom</packaging>
+
+    <name>Jarmerge Extensions Test Projects</name>
+    <description>
+        Test projects for JarMerge extensions
+    </description>
+
+    <modules>
+        <module>reloclib</module>
+        <module>reloctest</module>
+        <module>test-reloc-verification</module>
+        <module>test-modularlib</module>
+        <module>test-second-modular-lib</module>
+        <module>test-modular-service-lib</module>
+        <module>test-non-modular-service-exporter</module>
+        <module>test-combined-modular-lib</module>
+    </modules>
+
+    <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
+    <dependencyManagement>
+
+        <dependencies>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-reloctest</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-reloclib</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-reloc-verification</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-modularlib</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-modular-service-lib</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-non-modular-service-exporter</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-second-modular-lib</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog.test</groupId>
+                <artifactId>test-combined-modular-lib</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.13</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
+                        <!-- We actually do not want to publish any of these -->
+                        <skipStaging>true</skipStaging>
+                        <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.mastfrog</groupId>
+                    <artifactId>maven-merge-configuration</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.mastfrog</groupId>
+                            <artifactId>jarmerge-relocation</artifactId>
+                            <version>${moduleinfo-synthesizer-parent.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.mastfrog</groupId>
+                            <artifactId>smart-jar-merge</artifactId>
+                            <version>${smart-jar-merge.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

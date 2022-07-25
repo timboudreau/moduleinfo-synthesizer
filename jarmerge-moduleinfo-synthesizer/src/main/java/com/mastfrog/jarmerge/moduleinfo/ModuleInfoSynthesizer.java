@@ -59,12 +59,13 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     @Override
     public JarFilter<Coalescer> configureInstance(JarMerge jarMerge) {
+        System.out.println("CONFIGURE ModuleInfoSynthesizer");
         return new ModuleInfoSynthesizer(jarMerge);
     }
 
     @Override
     public int precedence() {
-        return 1000;
+        return 1;
     }
 
     @Override
@@ -155,6 +156,7 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
     @Override
     public synchronized Coalescer coalescer(String path, Path inJar, JarEntry entry, MergeLog log) {
         if ("module-info.class".equals(entry.getName())) {
+            System.out.println("HAVE MODULE INFO IN " + inJar.getFileName());
             return collector();
         } else {
             if (path.startsWith("META-INF/services")) {
