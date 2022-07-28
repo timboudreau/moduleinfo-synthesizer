@@ -26,6 +26,8 @@ package com.mastfrog.jarmerge.moduleinfo;
 import com.mastfrog.jarmerge.JarMerge;
 import com.mastfrog.jarmerge.MergeLog;
 import com.mastfrog.jarmerge.builtin.ConcatenateMetaInfServices;
+import com.mastfrog.jarmerge.builtin.OmitExcludedPatterns;
+import com.mastfrog.jarmerge.builtin.OmitExcludedPrefixes;
 import com.mastfrog.jarmerge.builtin.OmitModuleInfo;
 import com.mastfrog.jarmerge.spi.Coalescer;
 import com.mastfrog.jarmerge.spi.JarFilter;
@@ -72,13 +74,20 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
     private final JarMerge merge;
     private boolean zeroDates;
     private ModuleInfoCollector collector;
+    // We need these because we may be called ahead of these
+    private final OmitExcludedPrefixes prefixSkip;
+    private final OmitExcludedPatterns patternSkip;
 
     public ModuleInfoSynthesizer() {
         this.merge = null;
+        prefixSkip = new OmitExcludedPrefixes();
+        patternSkip = new OmitExcludedPatterns();
     }
 
     private ModuleInfoSynthesizer(JarMerge merge) {
         this.merge = merge;
+        prefixSkip = new OmitExcludedPrefixes(merge);
+        patternSkip = new OmitExcludedPatterns(merge);
     }
 
     @Override
@@ -127,8 +136,23 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     @Override
     public boolean omit(String path, Path inJar, MergeLog log) {
+        if (path.contains("module-info.class")) {
+            return false;
+        }
+        // These are provided by java.xml in the JDK and will ALWAYS result in
+        // an unusable module jar
+        if (path.startsWith("javax/xml")) {
+            if (this.collector != null) {
+                this.collector.addRequire("java.xml");
+            }
+            return true;
+        }
 //        return "module-info.class".equals(path);
-        return false;
+        boolean result = patternSkip.omit(path, inJar, log) || prefixSkip.omit(path, inJar, log);
+        if (result) {
+            System.out.println("OMIT " + path + " from " + inJar.getFileName());
+        }
+        return result;
     }
 
     private static String moduleNameFromJarName(String jarName) {
@@ -209,6 +233,15 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     @Override
     public synchronized Coalescer coalescer(String path, Path inJar, JarEntry entry, MergeLog log) {
+        // These are provided by java.xml in the JDK and will ALWAYS result in
+        // an unusable module jar
+        if (path.startsWith("javax/xml")) {
+            return null;
+        }
+        if (omit(path, inJar, log)) {
+            System.out.println("SKIP " + path + " " + inJar.getFileName());
+            return null;
+        }
         if (isModuleInfo(entry.getName())) {
             return collector();
         } else {

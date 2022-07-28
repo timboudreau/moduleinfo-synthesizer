@@ -33,16 +33,19 @@ import java.util.Set;
  *
  * @author Tim Boudreau
  */
-class ModuleInfoGenerator {
+final class ModuleInfoGenerator {
 
     private final List<JarInfo> info;
     private boolean open = true;
     private final Set<String> automaticModulesMerged;
+    private final Set<String> syntheticRequires;
 
-    public ModuleInfoGenerator(Collection<? extends JarInfo> info, Set<String> automaticModulesMerged) {
+    public ModuleInfoGenerator(Collection<? extends JarInfo> info,
+            Set<String> automaticModulesMerged, Set<String> syntheticRequires) {
         this.info = new ArrayList<>(info);
         Collections.sort(this.info);
         this.automaticModulesMerged = automaticModulesMerged;
+        this.syntheticRequires = syntheticRequires;
     }
 
     ModuleInfoGenerator open() {
@@ -55,7 +58,7 @@ class ModuleInfoGenerator {
     }
 
     public String moduleInfo(String moduleName, boolean generateUses) {
-        JarsData jd = new JarsData(open, generateUses, automaticModulesMerged);
+        JarsData jd = new JarsData(open, generateUses, automaticModulesMerged, syntheticRequires);
         for (JarInfo ji : info) {
             ji.collect(jd);
         }

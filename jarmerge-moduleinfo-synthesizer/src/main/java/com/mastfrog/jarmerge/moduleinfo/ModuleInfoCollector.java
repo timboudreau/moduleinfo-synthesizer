@@ -83,6 +83,7 @@ class ModuleInfoCollector implements Coalescer {
 
     private final Set<Path> jarsExaminedForAutomaticModules = new HashSet<>();
     private final Set<String> automaticModulesMerged = new HashSet<>();
+    private final Set<String> syntheticRequires = new HashSet<>();
 
     ModuleInfoCollector(String name, boolean zeroDates, boolean open,
             boolean checkServiceConstructors, boolean generateUses) {
@@ -165,7 +166,7 @@ class ModuleInfoCollector implements Coalescer {
                     }
                 }
             }
-            ModuleInfoGenerator gen = new ModuleInfoGenerator(this.infos.values(), this.automaticModulesMerged);
+            ModuleInfoGenerator gen = new ModuleInfoGenerator(this.infos.values(), automaticModulesMerged, syntheticRequires);
             gen.open(open);
             String content = gen.moduleInfo(moduleName, generateUses);
             System.out.println("Generated module-info.java:\n");
@@ -221,6 +222,10 @@ class ModuleInfoCollector implements Coalescer {
 
     void unrequire(Set<String> unrequired) {
         automaticModulesMerged.addAll(unrequired);
+    }
+
+    void addRequire(String inferredJdkModuleName) {
+        syntheticRequires.add(inferredJdkModuleName);
     }
 
     class WrappedCoalescer implements Coalescer {

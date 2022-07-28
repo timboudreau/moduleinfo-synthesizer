@@ -50,16 +50,19 @@ class JarsData {
     final boolean open;
     private final boolean generateUseEntryForProvides;
     private final Set<String> automaticModulesMerged;
+    private final Set<String> syntheticRequires;
 
-    JarsData(boolean open, boolean generateUseEntryForProvides, Set<String> automaticModulesMerged) {
+    JarsData(boolean open, boolean generateUseEntryForProvides, Set<String> automaticModulesMerged, Set<String> syntheticRequires) {
         this.open = open;
         this.generateUseEntryForProvides = generateUseEntryForProvides;
         this.automaticModulesMerged = automaticModulesMerged;
+        this.syntheticRequires = syntheticRequires;
     }
 
     void write(StringBuilder into) {
         Set<String> usesWritten = new HashSet<>();
         Set<String> providesWritten = new HashSet<>();
+        Set<String> writtenRequires = new HashSet<>();
         ClassNameRewriter rew = ClassNameRewriter.get();
         String lineHead = "\n    ";
         requires.forEach((name, req) -> {
@@ -68,7 +71,15 @@ class JarsData {
             }
             into.append(lineHead);
             req.apply(into, rew);
+            writtenRequires.add(req.target());
         });
+        // We detect attempts to bundle javax/xml packages and replace them
+        // with a synthetic requiring in of java.xml.
+        for (String synth : syntheticRequires) {
+            if (writtenRequires.add(synth)) {
+                into.append(lineHead).append("require ").append(synth).append(';');
+            }
+        }
         into.append('\n');
         exports.forEach((name, req) -> {
             into.append(lineHead);
@@ -96,7 +107,7 @@ class JarsData {
         into.append('\n');
         for (String u : uses) {
             u = canonicalize(u);
-            if ( !usesWritten.contains(u)) {
+            if (!usesWritten.contains(u)) {
                 usesWritten.add(u);
                 into.append(lineHead);
                 into.append("uses ").append(u).append(';');
