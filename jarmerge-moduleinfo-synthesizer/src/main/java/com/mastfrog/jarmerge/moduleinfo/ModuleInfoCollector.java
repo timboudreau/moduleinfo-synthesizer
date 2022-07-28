@@ -308,10 +308,8 @@ class ModuleInfoCollector implements Coalescer {
 
     void notePackage(String path, Path inJar, JarEntry entry, MergeLog log) {
         if (path.indexOf('/') >= 0 && path.startsWith("META-INF")) {
-            System.out.println("  NOPE " + path);
             return;
         }
-        System.out.println("NOTE PKG " + path);
         log.debug("Note " + UnixPath.get(entry.getName()).toString('.'));
         infoFor(inJar).note(entry);
     }

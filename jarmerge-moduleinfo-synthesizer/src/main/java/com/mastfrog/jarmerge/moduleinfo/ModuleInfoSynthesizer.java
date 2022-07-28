@@ -200,6 +200,9 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
     }
 
     static boolean isModuleInfo(String path) {
+        // Note, this is not great.  If there is META-INF/9/module-info.class
+        // and META-INF/11/module-info.class, we are going to coalesce ONE
+        // of these and ignore all of the others, based on JAR order
         return "module-info.class".equals(path)
                 || MODULE_INFO_VERSIONS_PATTERN.matcher(path).find();
     }
@@ -213,10 +216,7 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
                 Coalescer wrapped = collector().wrap(path, inJar, entry, log);
                 return wrapped;
             } else if (!path.startsWith("META-INF") && path.endsWith(".class") && isPossibleJavaPackage(path)) {
-                System.out.println("MAYBE NOTE " + path);
                 collector().notePackage(path, inJar, entry, log);
-            } else {
-                System.out.println("FALLTHROUGH " + path);
             }
         }
         return null;

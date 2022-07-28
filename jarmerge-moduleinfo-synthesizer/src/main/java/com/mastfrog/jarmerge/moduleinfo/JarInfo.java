@@ -117,11 +117,7 @@ class JarInfo implements Comparable<JarInfo> {
         UnixPath up = UnixPath.get(e.getName());
         UnixPath par = up.getParent();
         if (par != null && !par.toString().contains("META-INF")) {
-            
-            boolean added = packages.add(par.toString('.'));
-            if (added) {
-                System.out.println("NOTING PACKAGE " + par.toString('.'));
-            }
+            packages.add(par.toString('.'));
         }
         return false;
     }
