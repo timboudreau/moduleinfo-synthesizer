@@ -39,7 +39,7 @@ import org.netbeans.modules.classfile.Module;
  *
  * @author Tim Boudreau
  */
-class JarsData {
+final class JarsData {
 
     final Map<String, ExpEntry> exports = new HashMap<>();
     final Map<String, Open> opens = new HashMap<>();

@@ -28,10 +28,11 @@ import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.Module;
 
 /**
+ * A requires entry discovered in a module-info.class or otherwise synthesized.
  *
  * @author Tim Boudreau
  */
-class Req extends ModuleEntry<Req> {
+final class Req extends ModuleEntry<Req> {
 
     private int flags;
     private String ver;

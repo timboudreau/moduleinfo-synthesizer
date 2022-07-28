@@ -31,6 +31,9 @@ import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Module;
 
 /**
+ * A provides entry for a given service class, either discovered in a
+ * module-info.class, or in a META-INF/services file, or synthesized based on an
+ * inference from discovered data.
  *
  * @author Tim Boudreau
  */

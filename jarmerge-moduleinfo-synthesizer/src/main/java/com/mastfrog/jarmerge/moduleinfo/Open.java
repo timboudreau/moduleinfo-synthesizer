@@ -30,10 +30,12 @@ import java.util.function.Function;
 import org.netbeans.modules.classfile.Module;
 
 /**
+ * An opens entry from a discovered module-info or synthesized based on
+ * discovered packages.
  *
  * @author Tim Boudreau
  */
-class Open extends ModuleEntry<Open> {
+final class Open extends ModuleEntry<Open> {
 
     private final Set<String> opensTo = new TreeSet<>();
 

@@ -33,7 +33,7 @@ abstract class ModuleEntry<E extends ModuleEntry<E>> implements Comparable<Modul
 
     protected final String target;
 
-    public ModuleEntry(String target) {
+    ModuleEntry(String target) {
         this.target = target;
     }
 

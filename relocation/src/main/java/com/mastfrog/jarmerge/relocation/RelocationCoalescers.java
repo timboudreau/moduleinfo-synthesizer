@@ -48,7 +48,8 @@ import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
 
 /**
- * Aggregates a set of renames and associated coalescers.
+ * Aggregates a set of renames and associated coalescers so they can all be
+ * applied across all encountered class files.
  *
  * @author Tim Boudreau
  */

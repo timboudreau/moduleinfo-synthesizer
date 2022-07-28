@@ -45,10 +45,11 @@ import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Module;
 
 /**
+ * Collection of data about packages and services discovered from one JAR.
  *
  * @author Tim Boudreau
  */
-class JarInfo implements Comparable<JarInfo> {
+final class JarInfo implements Comparable<JarInfo> {
 
     private final Map<String, Set<String>> serviceData = new HashMap<>();
     private final Set<String> packages = new HashSet<>();
@@ -127,7 +128,7 @@ class JarInfo implements Comparable<JarInfo> {
         return rawName().compareToIgnoreCase(o.rawName());
     }
 
-    void readServiceFile(String service, JarFile file, JarEntry entry, 
+    void readServiceFile(String service, JarFile file, JarEntry entry,
             InputStream in, MergeLog log, boolean checkServiceConstructors) throws IOException {
         Set<String> svcs = services(service);
         String content = new String(in.readAllBytes(), UTF_8);

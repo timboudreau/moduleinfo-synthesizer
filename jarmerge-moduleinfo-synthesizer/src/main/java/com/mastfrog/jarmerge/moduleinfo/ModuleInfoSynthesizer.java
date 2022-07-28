@@ -136,6 +136,8 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     @Override
     public boolean omit(String path, Path inJar, MergeLog log) {
+        // THe skippers may be set to omit module-info.class, but we must
+        // not or we will never get a chance to process it.
         if (path.contains("module-info.class")) {
             return false;
         }

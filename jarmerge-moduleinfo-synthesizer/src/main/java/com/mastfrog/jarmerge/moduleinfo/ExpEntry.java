@@ -29,10 +29,11 @@ import java.util.TreeSet;
 import java.util.function.Function;
 
 /**
+ * An exports entry for a package.
  *
  * @author Tim Boudreau
  */
-class ExpEntry extends ModuleEntry<ExpEntry> {
+final class ExpEntry extends ModuleEntry<ExpEntry> {
 
     private int flags;
     private final Set<String> to = new TreeSet<>();

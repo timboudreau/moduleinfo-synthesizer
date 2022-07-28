@@ -27,8 +27,9 @@ import com.mastfrog.jarmerge.MergeLog;
 import com.mastfrog.jarmerge.builtin.ConcatenateMetaInfServices;
 import static com.mastfrog.jarmerge.moduleinfo.ModuleInfoSynthesizer.isModuleInfo;
 import com.mastfrog.jarmerge.spi.Coalescer;
-import com.mastfrog.util.collections.CollectionUtils;
+import static com.mastfrog.util.collections.CollectionUtils.immutableSetOf;
 import com.mastfrog.util.file.FileUtils;
+import static com.mastfrog.util.file.FileUtils.deltree;
 import com.mastfrog.util.path.UnixPath;
 import com.mastfrog.util.streams.Streams;
 import java.io.BufferedInputStream;
@@ -43,6 +44,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
+import static java.util.Collections.emptySet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,7 +64,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
+import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 /**
  *
@@ -178,9 +180,9 @@ class ModuleInfoCollector implements Coalescer {
             }
             DiagLog diagLog = new DiagLog(log);
             log.warn("Begin compile of synthetic module-info.java");
-            Set<String> options = CollectionUtils.immutableSetOf("-g");
-            Set<String> classNamesForAnnoProcessing = Collections.emptySet();
-            JavaCompiler comp = ToolProvider.getSystemJavaCompiler();
+            Set<String> options = immutableSetOf("-g");
+            Set<String> classNamesForAnnoProcessing = emptySet();
+            JavaCompiler comp = getSystemJavaCompiler();
             StandardJavaFileManager mgr = comp.getStandardFileManager(diagLog, Locale.US, StandardCharsets.UTF_8);
             mgr.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(classes.toFile()));
             mgr.setLocation(StandardLocation.SOURCE_PATH, Collections.singleton(src.toFile()));
@@ -194,12 +196,12 @@ class ModuleInfoCollector implements Coalescer {
             }
             log.debug("Copy " + classes.resolve("module-info.class") + " into JAR");
             try (final InputStream is = Files.newInputStream(classes.resolve("module-info.class"), StandardOpenOption.READ)) {
-                Streams.copy(is, out);
+                Streams.copy(is, out, 512);
             }
         } finally {
             written = true;
             if (!failed) {
-                FileUtils.deltree(tmp);
+                deltree(tmp);
             }
         }
     }
