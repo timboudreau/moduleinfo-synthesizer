@@ -76,13 +76,15 @@ class ModuleInfoCollector implements Coalescer {
     boolean written;
     private final boolean open;
     private final boolean checkServiceConstructors;
+    private final boolean generateUses;
 
     ModuleInfoCollector(String name, boolean zeroDates, boolean open, 
-            boolean checkServiceConstructors) {
+            boolean checkServiceConstructors, boolean generateUses) {
         this.moduleName = name;
         this.zeroDates = zeroDates;
         this.open = open;
         this.checkServiceConstructors = checkServiceConstructors;
+        this.generateUses = generateUses;
     }
 
     private JarInfo infoFor(Path path) {
@@ -145,7 +147,7 @@ class ModuleInfoCollector implements Coalescer {
             }
             ModuleInfoGenerator gen = new ModuleInfoGenerator(this.infos.values());
             gen.open(open);
-            String content = gen.moduleInfo(moduleName);
+            String content = gen.moduleInfo(moduleName, generateUses);
             System.out.println("Generated module-info.java:\n");
             System.out.println(content);
             System.out.println();

@@ -117,6 +117,12 @@ public final class ClassRelocatingJarFilter implements JarFilter<Coalescer> {
             }
             return null;
         }
+        if (path.startsWith("META-INF/versions")) {
+            // Pending:  What to do about these?
+            // For now, simply assume that the caller will exclude them from 
+            // the build entirely.
+            return null;
+        }
         if ("module-info.class".equals(path)) {
             return null;
         }

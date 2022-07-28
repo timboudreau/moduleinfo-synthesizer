@@ -51,8 +51,8 @@ class ModuleInfoGenerator {
         return this;
     }
 
-    public String moduleInfo(String moduleName) {
-        JarsData jd = new JarsData(open);
+    public String moduleInfo(String moduleName, boolean generateUses) {
+        JarsData jd = new JarsData(open, generateUses);
         for (JarInfo ji : info) {
             ji.collect(jd);
         }

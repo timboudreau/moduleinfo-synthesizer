@@ -19,6 +19,7 @@
         <module>jarmerge-moduleinfo-synthesizer</module>
         <module>relocation</module>
         <module>test-projects</module>
+        <module>asm-utils</module>
     </modules>
 
     <properties>
@@ -39,19 +40,9 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>com.mastfrog</groupId>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>maven-merge-configuration</artifactId>
                     <version>${maven-merge-configuration-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.mastfrog</groupId>
-                    <artifactId>jarmerge-moduleinfo-synthesizer</artifactId>
-                    <version>${moduleinfo-synthesizer-parent.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.mastfrog</groupId>
-                    <artifactId>jarmerge-relocation</artifactId>
-                    <version>${moduleinfo-synthesizer-parent.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -64,7 +55,7 @@
                     <version>3.0.0-M7</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.mastfrog</groupId>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>revision-info-plugin</artifactId>
                     <version>0.21</version>
                 </plugin>
@@ -113,10 +104,6 @@
                                 </requireJavaVersion>
                                 <DependencyConvergence/>
                                 <banDuplicatePomDependencyVersions/>
-                                <reactorModuleConvergence>
-                                    <message>Reactor module convergence failure.</message>
-                                    <ignoreModuleDependencies>true</ignoreModuleDependencies>
-                                </reactorModuleConvergence>    
                                 <requireReleaseDeps>
                                     <message>Snapshot dependencies not allowed.</message>
                                 </requireReleaseDeps>
@@ -142,6 +129,28 @@
     </build>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jarmerge-moduleinfo-synthesizer</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jarmerge-relocation</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>asm-utils</artifactId>
+                <version>${moduleinfo-synthesizer-parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mastfrog</groupId>
+                <artifactId>mastfrog-parent</artifactId>
+                <version>${mastfrog.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>smart-jar-merge</artifactId>

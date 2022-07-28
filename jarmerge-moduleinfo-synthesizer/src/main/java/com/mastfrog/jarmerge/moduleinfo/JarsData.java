@@ -47,9 +47,11 @@ class JarsData {
     final Set<String> uses = new TreeSet<>();
     final Set<String> coalescedModuleNames = new TreeSet<>();
     final boolean open;
+    private final boolean generateUseEntryForProvides;
 
-    JarsData(boolean open) {
+    JarsData(boolean open, boolean generateUseEntryForProvides) {
         this.open = open;
+        this.generateUseEntryForProvides = generateUseEntryForProvides;
     }
 
     void write(StringBuilder into) {
@@ -78,6 +80,9 @@ class JarsData {
         provides.forEach((name, req) -> {
             into.append(lineHead);
             req.apply(into, rew);
+            if (generateUseEntryForProvides) {
+                into.append(lineHead).append("uses ").append(name).append(';');
+            }
         });
         into.append('\n');
         for (String u : uses) {

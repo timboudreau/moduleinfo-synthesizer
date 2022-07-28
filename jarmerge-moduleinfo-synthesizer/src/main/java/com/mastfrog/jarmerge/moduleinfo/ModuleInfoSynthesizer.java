@@ -41,10 +41,26 @@ import java.util.jar.JarEntry;
 @ServiceProvider(JarFilter.class)
 public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
+    /**
+     * Module name to use.
+     */
     public static final String PROP_MODULE_NAME = "moduleName";
+    /**
+     * Generate an "open" module.
+     */
     public static final String PROP_OPEN_MODULE = "openModule";
+    /**
+     * If set, examine registered service classes for public no-arg
+     * constructors, and do not generate provides entries. This is usually not
+     * needed, but some Hadoop jars have this pathology.
+     */
     public static final String PROP_CHECK_SERVICE_CONSTRUCTORS
             = "checkServiceConstructors";
+    /**
+     * Generate <code>uses</code> statements for all services that are provided.
+     */
+    public static final String PROP_GENERATE_USES
+            = "generateUses";
     private final JarMerge merge;
     private boolean zeroDates;
     private ModuleInfoCollector collector;
@@ -71,6 +87,13 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
     @Override
     public boolean enabledByDefault() {
         return true;
+    }
+    
+    public boolean generatedUses() {
+        if (merge == null) {
+            return false;
+        }
+        return "true".equals(merge.extensionProperties.get(PROP_GENERATE_USES));
     }
 
     @Override
@@ -148,7 +171,7 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
     private synchronized ModuleInfoCollector collector() {
         if (collector == null) {
             collector = new ModuleInfoCollector(moduleName(), zeroDates, open(),
-                    checkServiceConstructors());
+                    checkServiceConstructors(), generatedUses());
         }
         return collector;
     }

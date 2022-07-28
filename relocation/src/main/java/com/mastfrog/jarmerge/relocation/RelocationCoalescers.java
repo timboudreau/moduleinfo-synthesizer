@@ -23,6 +23,12 @@
  */
 package com.mastfrog.jarmerge.relocation;
 
+import static com.mastfrog.asmgraph.Parsing.classSignature;
+import static com.mastfrog.asmgraph.Parsing.fieldSignature;
+import static com.mastfrog.asmgraph.Parsing.methodSignature;
+import com.mastfrog.asmgraph.asm.model.ClassSignature;
+import com.mastfrog.asmgraph.asm.model.MethodSignature;
+import com.mastfrog.asmgraph.asm.model.TypeName;
 import com.mastfrog.function.throwing.io.IOSupplier;
 import com.mastfrog.jarmerge.MergeLog;
 import static com.mastfrog.jarmerge.relocation.TypeNameUtils.looksLikeFQN;
@@ -53,6 +59,9 @@ final class RelocationCoalescers {
     private final Set<RelocationEntry> all = ConcurrentHashMap.newKeySet();
     private final Set<AnyCoalescer> anys = ConcurrentHashMap.newKeySet();
     private final ClassRelocatingJarFilter owner;
+    private final Set<String> noRemapCache = new HashSet<>();
+
+    Set<String> writtenEntries = new HashSet<>();
 
     public RelocationCoalescers(ClassRelocatingJarFilter owner) {
         this.owner = owner;
@@ -60,32 +69,48 @@ final class RelocationCoalescers {
 
     void writeCoalesced(JarOutputStream out, MergeLog log, RelocationEntry entry,
             IOSupplier<InputStream> originalBytes) throws Exception {
-
-        JarEntry je = newJarEntry(entry.newJarEntryName());
-        out.putNextEntry(je);
-        try {
-            out.write(applyTransforms(originalBytes));
-        } finally {
-            out.closeEntry();
+        String ne = entry.newJarEntryName();
+        if (writtenEntries.add(ne)) {
+            JarEntry je = newJarEntry(entry.newJarEntryName());
+            out.putNextEntry(je);
+            try {
+                out.write(applyTransforms(entry.in(), entry.path(), originalBytes));
+            } finally {
+                out.closeEntry();
+            }
         }
     }
 
     void writeCoalesced(JarOutputStream out, MergeLog log, AnyCoalescer entry,
             IOSupplier<InputStream> originalBytes) throws Exception {
-        JarEntry je = newJarEntry(entry.path());
-        out.putNextEntry(je);
-        try {
-            out.write(applyTransforms(originalBytes));
-        } finally {
-            out.closeEntry();
+        String ne = entry.path();
+        if (writtenEntries.add(ne)) {
+            JarEntry je = newJarEntry(entry.path());
+            out.putNextEntry(je);
+            try {
+                out.write(applyTransforms(entry.jar, entry.path, originalBytes));
+            } catch (IllegalArgumentException ex) {
+                // Okay, this is just awful:
+                // ASM will emit this valid signature for a method:
+                // ()Lorg/apache/hadoop/thirdparty/com/google/common/collect/StandardTable<TR;TC;TV;>.Row;Ljava/util/SortedMap<TC;TV;>;
+                // However, its internal SignatureReader cannot parse it.  So, effectively,
+                // we simply cannot relocate classes that contain a signature like this.
+                //
+                // Dangerous, but the best we can do is to write the unrelocated bytes
+                // and hope it is not a type we actually want to relocate.
+                ex.printStackTrace();
+                out.write(originalBytes.get().readAllBytes());
+            } finally {
+                out.closeEntry();
+            }
         }
     }
 
-    private byte[] applyTransforms(IOSupplier<InputStream> on) throws Exception {
+    private byte[] applyTransforms(Path jar, String path, IOSupplier<InputStream> on) throws Exception {
         try ( InputStream in = on.get()) {
             ClassReader cr = new ClassReader(in);
             ClassWriter cw = new ClassWriter(0);
-            ClassRemapperImpl glarg = new ClassRemapperImpl(cw);
+            ClassRemapperImpl glarg = new ClassRemapperImpl(jar, path, cw);
             cr.accept(glarg, ClassReader.EXPAND_FRAMES);
             return cw.toByteArray();
         }
@@ -110,6 +135,58 @@ final class RelocationCoalescers {
         }
         String result = stripDotClass(es.iterator().next().newJarEntryName());
         return is ? lSemi(result) : result;
+    }
+
+    String remapMethodSignature(String signature) {
+        if (signature == null) {
+            return null;
+        }
+        if (noRemapCache.contains(signature)) {
+            return signature;
+        }
+        MethodSignature sig = methodSignature(signature);
+        return debugRemap(signature, sig.transform(this::simpleRemap).toString(), "method");
+    }
+
+    String remapType(String signature) {
+        if (signature == null) {
+            return null;
+        }
+        if (noRemapCache.contains(signature)) {
+            return signature;
+        }
+        if (signature.startsWith("L") && signature.endsWith(";")) {
+            TypeName sig = fieldSignature(signature);
+            return debugRemap(signature, sig.transform(this::simpleRemap).toString(), "typeFull");
+        } else {
+            TypeName nm = TypeName.simpleName(signature);
+            return debugRemap(signature, nm.transform(this::simpleRemap).toString(), "typeSimple");
+        }
+    }
+
+    String remapClassSignature(String classSignature) {
+        if (classSignature == null) {
+            return null;
+        }
+        if (noRemapCache.contains(classSignature)) {
+            return classSignature;
+        }
+        if (classSignature.startsWith("L") && classSignature.endsWith(";")) {
+            return debugRemap(classSignature, remapType(classSignature), "classAsSimpleType");
+        }
+        if (classSignature.indexOf('(') >= 0) {
+            return debugRemap(classSignature, remapMethodSignature(classSignature), "classAsMethodSig");
+        }
+        ClassSignature sig = classSignature(classSignature);
+        return debugRemap(classSignature, sig.transform(this::simpleRemap).toString(), "class");
+    }
+
+    private String debugRemap(String sig, String output, String kind) {
+        // This saves a LOT of parsing
+        if (sig.equals(output)) {
+            noRemapCache.add(sig);
+        }
+        return output;
     }
 
     public String remap(String what) {
@@ -142,6 +219,17 @@ final class RelocationCoalescers {
         return nue;
     }
 
+    public String[] remapTypes(String[] what) {
+        if (what == null) {
+            return null;
+        }
+        String[] nue = new String[what.length];
+        for (int i = 0; i < what.length; i++) {
+            nue[i] = remapType(what[i]);
+        }
+        return nue;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(entries.size() + " relocs "
@@ -157,25 +245,24 @@ final class RelocationCoalescers {
 
     private final class ClassRemapperImpl extends ClassRemapper {
 
-        public ClassRemapperImpl(ClassVisitor classVisitor) {
-            this(classVisitor, new Remap());
+        private final Path jar;
+        private final String entry;
+
+        public ClassRemapperImpl(Path jar, String entry, ClassVisitor classVisitor) {
+            this(jar, entry, classVisitor, new Remap(jar, entry));
         }
 
-        private ClassRemapperImpl(ClassVisitor cv, Remap remap) {
+        private ClassRemapperImpl(Path jar, String entry, ClassVisitor cv, Remap remap) {
             super(cv, remap);
+            this.jar = jar;
+            this.entry = entry;
         }
 
         @Override
         public void visit(int version, int access, String name, String signature,
                 String superName, String[] interfaces) {
-            if (interfaces != null) {
-                String[] nue = new String[interfaces.length];
-                for (int i = 0; i < interfaces.length; i++) {
-                    nue[i] = remap(interfaces[i]);
-                }
-                interfaces = nue;
-            }
-            super.visit(version, access, remap(name), remap(signature), remap(superName), interfaces);
+            super.visit(version, access, remap(name), remapMethodSignature(signature),
+                    remapType(superName), remapTypes(interfaces));
         }
 
         @Override
@@ -190,7 +277,7 @@ final class RelocationCoalescers {
 
         @Override
         public void visitOuterClass(String owner, String name, String descriptor) {
-            super.visitOuterClass(remap(owner), remap(name), remap(descriptor));
+            super.visitOuterClass(remapType(owner), remap(name), remapMethodSignature(descriptor));
         }
 
         @Override
@@ -210,9 +297,17 @@ final class RelocationCoalescers {
 
     private final class Remap extends Remapper {
 
+        private final Path jar;
+        private final String entry;
+
+        Remap(Path jar, String entry) {
+            this.jar = jar;
+            this.entry = entry;
+        }
+
         @Override
         public String map(String internalName) {
-            String nt = remap(internalName);
+            String nt = remapType(internalName);
             return super.map(nt);
         }
 
@@ -221,7 +316,7 @@ final class RelocationCoalescers {
             if (value instanceof String) {
                 if (looksLikeFQN((String) value)) {
                     String v = ((String) value).replace('.', '/');
-                    String nue = remap(v);
+                    String nue = remapType(v);
                     if (!v.equals(nue)) {
                         value = stripDotClass(nue).replace('/', '.');
                     }
@@ -237,54 +332,77 @@ final class RelocationCoalescers {
 
         @Override
         public String[] mapTypes(String[] internalNames) {
-            return super.mapTypes(remap(internalNames));
+            return super.mapTypes(remapTypes(internalNames));
         }
 
         @Override
         public String mapDesc(String descriptor) {
-            String nt = remap(descriptor);
+            String nt;
+            if (descriptor.indexOf('(') >= 0) {
+                nt = remapMethodSignature(descriptor);
+            } else {
+                nt = remapType(descriptor);
+            }
             return super.mapDesc(nt);
         }
 
         @Override
         public String mapType(String internalName) {
-            String nt = remap(internalName);
+            String nt = remapType(internalName);
             return super.mapType(nt);
         }
 
         @Override
         public String mapInnerClassName(String name, String ownerName, String innerName) {
-            return super.mapInnerClassName(remap(name), remap(ownerName), innerName);
+            return super.mapInnerClassName(remap(name), remapType(ownerName), innerName);
         }
 
         @Override
         public String mapSignature(String signature, boolean typeSignature) {
             String orig = signature;
             if (signature != null) {
-                String nue = remap(signature);
+                String nue = typeSignature ? remapClassSignature(signature) : remapMethodSignature(signature);
                 signature = nue;
             }
             try {
                 return super.mapSignature(signature, typeSignature);
             } catch (IllegalArgumentException | StringIndexOutOfBoundsException iae) {
-                throw new IllegalArgumentException("Bad signature remap '"
-                        + orig + "' -> '" + signature + "'", iae);
+//                throw new IllegalArgumentException("Bad signature remap '"
+//                        + orig + "' -> '" + signature + "'", iae);
+                IllegalArgumentException iae2 = new IllegalArgumentException("Bad signature remap '"
+                        + orig + "' -> '" + signature + "' in " + entry + " of " + jar.getFileName(), iae);
+                iae2.printStackTrace();
+                try {
+                    return super.mapSignature(orig, typeSignature);
+                } catch (IllegalArgumentException iae3) {
+                    iae2.addSuppressed(iae3);
+                    if (orig.indexOf('.') > 0) {
+                        try {
+                            return super.mapSignature(orig.replace('.', '/'), typeSignature);
+                        } catch (IllegalArgumentException iae4) {
+                            iae2.addSuppressed(iae4);
+                            throw iae2;
+                        }
+                    } else {
+                        throw iae2;
+                    }
+                }
             }
         }
 
         @Override
         public String mapFieldName(String owner, String name, String descriptor) {
-            return super.mapFieldName(remap(owner), name, descriptor);
+            return super.mapFieldName(remapType(owner), name, descriptor);
         }
 
         @Override
         public String mapRecordComponentName(String owner, String name, String descriptor) {
-            return super.mapRecordComponentName(remap(owner), name, descriptor);
+            return super.mapRecordComponentName(remapType(owner), name, descriptor);
         }
 
         @Override
         public String mapAnnotationAttributeName(String descriptor, String name) {
-            return super.mapAnnotationAttributeName(remap(descriptor), remap(name));
+            return super.mapAnnotationAttributeName(remapClassSignature(descriptor), remap(name));
         }
     }
 

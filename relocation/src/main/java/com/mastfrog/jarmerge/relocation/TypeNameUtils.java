@@ -23,13 +23,15 @@
  */
 package com.mastfrog.jarmerge.relocation;
 
-import com.mastfrog.util.collections.IntIntMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.objectweb.asm.Type;
 
 /**
  * Borrowed from java-vogon.
@@ -54,7 +56,7 @@ final class TypeNameUtils {
 
         private int lastDepth;
         private final StringBuilder sb = new StringBuilder();
-        private final IntIntMap depthCounts = IntIntMap.create(8);
+        private final Map<Integer,Integer> depthCounts = new HashMap<>();
 
         private final List<Item> items = new ArrayList<>();
 
@@ -388,5 +390,18 @@ final class TypeNameUtils {
             }
         }
         return dotEncountered && !isLeadingChar;
+    }
+    
+    public static void main(String[] args) {
+        String bad = "<T:Ljava/lang/Object;>(Ljava/util/Collection<TT;>;Ljava/util/Collection<TT;>;)Z";
+        String result = remapNested(bad, Function.identity());
+        
+        System.out.println(bad);
+        System.out.println(result);
+        
+        Type[] types = Type.getArgumentTypes(bad);
+        for (Type t : types) {
+            System.out.println(" * " + t.getClassName());
+        }
     }
 }

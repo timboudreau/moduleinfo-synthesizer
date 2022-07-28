@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.mastfrog</groupId>
         <artifactId>moduleinfo-synthesizer-parent</artifactId>
         <version>1.0.2</version>
     </parent>
-    <artifactId>jarmerge-relocation</artifactId>
-    <name>jarmerge-relocation</name>
-    <description>Experimental class relocation</description>
+
+    <groupId>com.mastfrog</groupId>
+    <artifactId>asm-utils</artifactId>
+
+    <name>asm-utils</name>
+    <description>Some utilities for working with JVM class and method signatures</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <exec.mainClass>com.mastfrog.asmgraph.Asmgraph</exec.mainClass>
+        <asm.version>9.3</asm.version>
+    </properties>
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>smart-jar-merge</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>asm-utils</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
@@ -28,8 +32,11 @@
         </dependency>
         <dependency>
             <groupId>com.mastfrog</groupId>
-            <artifactId>annotation-processors</artifactId>
-            <scope>provided</scope>
+            <artifactId>concurrent</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mastfrog</groupId>
+            <artifactId>util-strings</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -47,4 +54,20 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
+                <configuration>
+                    <!-- Realtime output settings -->
+                    <useFile>false</useFile>
+                    <forkMode>none</forkMode>
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
