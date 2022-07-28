@@ -67,21 +67,39 @@ public class MethodSignatureParserTest {
             return "Signature mismatch\n" + txt + "\n" + sig.toString()
                     + "\nin" + seq;
         });
-        SignatureReader sr = new SignatureReader(txt);
-        sr.accept(new SignatureVisitor(ASM9) {
-            @Override
-            public void visitEnd() {
+    }
 
-            }
+    @Test
+    public void testTrailingPrimitiveInArguments() {
+        String txt = "(Lorg/apache/hadoop/fs/Path;Z)Lorg/apache/hadoop/fs/RemoteIterator<Lorg/apache/hadoop/fs/LocatedFileStatus;>;";
+        assertSignatureMatch(txt);
+    }
 
-        });
+    @Test
+    public void testTrailingPrimitiveArrayInArguments() {
+        String txt = "(Lorg/apache/hadoop/fs/Path;[Z)Lorg/apache/hadoop/fs/RemoteIterator<Lorg/apache/hadoop/fs/LocatedFileStatus;>;";
+        assertSignatureMatch(txt);
+    }
+
+    @Test
+    public void testTrailingMultiDimensionalPrimitiveArrayInArguments() {
+        String txt = "(Lorg/apache/hadoop/fs/Path;[[Z)Lorg/apache/hadoop/fs/RemoteIterator<Lorg/apache/hadoop/fs/LocatedFileStatus;>;";
+        assertSignatureMatch(txt);
     }
 
     @Test
     public void testInnerTypeNameWithOuterGenerics() {
         String txt = "(Lcom/google/protobuf/SmallSortedMap<TK;TV;>.Entry;)I";
+        assertSignatureMatch(txt);
+    }
+
+    static void assertSignatureMatch(String txt) {
         Sequence seq = new Sequence(txt);
         MethodSignature sig = parser.parse(seq);
+        assertSignatureMatch(txt, sig, seq);
+    }
+
+    static void assertSignatureMatch(String txt, MethodSignature sig, Sequence seq) {
         assertEquals(txt, sig.toString(), () -> {
             return "Signature mismatch\n" + txt + "\n" + sig.toString()
                     + "\nin" + seq;

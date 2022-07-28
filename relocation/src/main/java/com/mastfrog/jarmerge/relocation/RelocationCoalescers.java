@@ -90,14 +90,6 @@ final class RelocationCoalescers {
             try {
                 out.write(applyTransforms(entry.jar, entry.path, originalBytes));
             } catch (IllegalArgumentException ex) {
-                // Okay, this is just awful:
-                // ASM will emit this valid signature for a method:
-                // ()Lorg/apache/hadoop/thirdparty/com/google/common/collect/StandardTable<TR;TC;TV;>.Row;Ljava/util/SortedMap<TC;TV;>;
-                // However, its internal SignatureReader cannot parse it.  So, effectively,
-                // we simply cannot relocate classes that contain a signature like this.
-                //
-                // Dangerous, but the best we can do is to write the unrelocated bytes
-                // and hope it is not a type we actually want to relocate.
                 ex.printStackTrace();
                 out.write(originalBytes.get().readAllBytes());
             } finally {
@@ -144,6 +136,9 @@ final class RelocationCoalescers {
         if (noRemapCache.contains(signature)) {
             return signature;
         }
+        if (!signature.contains("(")) {
+            return remapType(signature);
+        }
         MethodSignature sig = methodSignature(signature);
         return debugRemap(signature, sig.transform(this::simpleRemap).toString(), "method");
     }
@@ -171,9 +166,9 @@ final class RelocationCoalescers {
         if (noRemapCache.contains(classSignature)) {
             return classSignature;
         }
-        if (classSignature.startsWith("L") && classSignature.endsWith(";")) {
-            return debugRemap(classSignature, remapType(classSignature), "classAsSimpleType");
-        }
+//        if (classSignature.startsWith("L") && classSignature.endsWith(";")) {
+//            return debugRemap(classSignature, remapType(classSignature), "classAsSimpleType");
+//        }
         if (classSignature.indexOf('(') >= 0) {
             return debugRemap(classSignature, remapMethodSignature(classSignature), "classAsMethodSig");
         }
@@ -185,6 +180,9 @@ final class RelocationCoalescers {
         // This saves a LOT of parsing
         if (sig.equals(output)) {
             noRemapCache.add(sig);
+        }
+        if (!sig.contains("(") && output.contains("(")) {
+            throw new Error("Turned '" + sig + "' into a method sig '" + output + "'");
         }
         return output;
     }
@@ -261,7 +259,7 @@ final class RelocationCoalescers {
         @Override
         public void visit(int version, int access, String name, String signature,
                 String superName, String[] interfaces) {
-            super.visit(version, access, remap(name), remapMethodSignature(signature),
+            super.visit(version, access, remap(name), remapClassSignature(signature),
                     remapType(superName), remapTypes(interfaces));
         }
 
@@ -367,26 +365,8 @@ final class RelocationCoalescers {
             try {
                 return super.mapSignature(signature, typeSignature);
             } catch (IllegalArgumentException | StringIndexOutOfBoundsException iae) {
-//                throw new IllegalArgumentException("Bad signature remap '"
-//                        + orig + "' -> '" + signature + "'", iae);
-                IllegalArgumentException iae2 = new IllegalArgumentException("Bad signature remap '"
-                        + orig + "' -> '" + signature + "' in " + entry + " of " + jar.getFileName(), iae);
-                iae2.printStackTrace();
-                try {
-                    return super.mapSignature(orig, typeSignature);
-                } catch (IllegalArgumentException iae3) {
-                    iae2.addSuppressed(iae3);
-                    if (orig.indexOf('.') > 0) {
-                        try {
-                            return super.mapSignature(orig.replace('.', '/'), typeSignature);
-                        } catch (IllegalArgumentException iae4) {
-                            iae2.addSuppressed(iae4);
-                            throw iae2;
-                        }
-                    } else {
-                        throw iae2;
-                    }
-                }
+                throw new IllegalArgumentException("Bad signature remap '"
+                        + orig + "' -> '" + signature + "'", iae);
             }
         }
 

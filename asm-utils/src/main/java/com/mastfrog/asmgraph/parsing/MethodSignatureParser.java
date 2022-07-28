@@ -51,7 +51,7 @@ public class MethodSignatureParser implements MiniParser<MethodSignature> {
             if (end > text.position()) {
                 text.limited(end, () -> {
                     LoopLimiter limiter = new LoopLimiter(text, this, result::toString);
-                    limiter.loop(() -> {
+                    limiter.loop2(() -> {
                         TypeName t = tp.parse(text);
                         text.consumeIf(';');
                         result.add(t);

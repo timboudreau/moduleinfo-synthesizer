@@ -117,7 +117,11 @@ class JarInfo implements Comparable<JarInfo> {
         UnixPath up = UnixPath.get(e.getName());
         UnixPath par = up.getParent();
         if (par != null && !par.toString().contains("META-INF")) {
-            return packages.add(par.toString('.'));
+            
+            boolean added = packages.add(par.toString('.'));
+            if (added) {
+                System.out.println("NOTING PACKAGE " + par.toString('.'));
+            }
         }
         return false;
     }
@@ -152,10 +156,8 @@ class JarInfo implements Comparable<JarInfo> {
             if (en != null) {
                 try ( InputStream in = file.getInputStream(en)) {
                     ClassFile cf = new ClassFile(in);
-                    System.out.println("SCAN " + cf.getSourceFileName() + " for constructors");
                     for (Method m : cf.getMethods()) {
                         if (m.isPublic()) {
-                            System.out.println("  CHECK '" + m.getName() + "'");
                             if ("<init>".equals(m.getName())) {
                                 return true;
                             }

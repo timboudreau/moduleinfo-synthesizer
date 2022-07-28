@@ -25,6 +25,7 @@ package com.mastfrog.jarmerge.moduleinfo;
 
 import com.mastfrog.jarmerge.MergeLog;
 import com.mastfrog.jarmerge.builtin.ConcatenateMetaInfServices;
+import static com.mastfrog.jarmerge.moduleinfo.ModuleInfoSynthesizer.isModuleInfo;
 import com.mastfrog.jarmerge.spi.Coalescer;
 import com.mastfrog.util.collections.CollectionUtils;
 import com.mastfrog.util.file.FileUtils;
@@ -49,10 +50,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
@@ -78,7 +81,10 @@ class ModuleInfoCollector implements Coalescer {
     private final boolean checkServiceConstructors;
     private final boolean generateUses;
 
-    ModuleInfoCollector(String name, boolean zeroDates, boolean open, 
+    private final Set<Path> jarsExaminedForAutomaticModules = new HashSet<>();
+    private final Set<String> automaticModulesMerged = new HashSet<>();
+
+    ModuleInfoCollector(String name, boolean zeroDates, boolean open,
             boolean checkServiceConstructors, boolean generateUses) {
         this.moduleName = name;
         this.zeroDates = zeroDates;
@@ -96,8 +102,22 @@ class ModuleInfoCollector implements Coalescer {
         return Arrays.asList("module-info.class");
     }
 
+    private void collectAutomaticModuleName(Path jar, JarFile file) throws IOException {
+        if (jarsExaminedForAutomaticModules.add(jar)) {
+            Manifest man = file.getManifest();
+            if (man != null) {
+                Attributes attrs = man.getMainAttributes();
+                String amn = attrs.getValue("Automatic-Module-Name");
+                if (amn != null) {
+                    automaticModulesMerged.add(amn);
+                }
+            }
+        }
+    }
+
     protected boolean read(Path jar, JarEntry entry, JarFile file, InputStream in, MergeLog log) throws Exception {
-        if ("module-info.class".equals(entry.getName()) && processed.add(jar)) {
+        collectAutomaticModuleName(jar, file);
+        if (isModuleInfo(entry.getName()) && processed.add(jar)) {
             log.warn("Will coalesce entry {0} in {1}", entry.getName(), jar);
             infoFor(jar).readModuleInfo(entry, file, in, log);
             return true;
@@ -145,7 +165,7 @@ class ModuleInfoCollector implements Coalescer {
                     }
                 }
             }
-            ModuleInfoGenerator gen = new ModuleInfoGenerator(this.infos.values());
+            ModuleInfoGenerator gen = new ModuleInfoGenerator(this.infos.values(), this.automaticModulesMerged);
             gen.open(open);
             String content = gen.moduleInfo(moduleName, generateUses);
             System.out.println("Generated module-info.java:\n");
@@ -197,6 +217,10 @@ class ModuleInfoCollector implements Coalescer {
             }
         }
         return null;
+    }
+
+    void unrequire(Set<String> unrequired) {
+        automaticModulesMerged.addAll(unrequired);
     }
 
     class WrappedCoalescer implements Coalescer {
@@ -283,9 +307,11 @@ class ModuleInfoCollector implements Coalescer {
     }
 
     void notePackage(String path, Path inJar, JarEntry entry, MergeLog log) {
-        if (!path.contains("/") || path.startsWith("META-INF")) {
+        if (path.indexOf('/') >= 0 && path.startsWith("META-INF")) {
+            System.out.println("  NOPE " + path);
             return;
         }
+        System.out.println("NOTE PKG " + path);
         log.debug("Note " + UnixPath.get(entry.getName()).toString('.'));
         infoFor(inJar).note(entry);
     }
@@ -317,7 +343,7 @@ class ModuleInfoCollector implements Coalescer {
     void noteServiceFile(String path, JarFile file, Path inJar, JarEntry entry, InputStream in, MergeLog log) throws IOException {
         String service = path.substring("META-INF/services/".length());
         JarInfo info = infoFor(inJar);
-        info.readServiceFile(service, file, entry, in, log, 
+        info.readServiceFile(service, file, entry, in, log,
                 checkServiceConstructors);
     }
 

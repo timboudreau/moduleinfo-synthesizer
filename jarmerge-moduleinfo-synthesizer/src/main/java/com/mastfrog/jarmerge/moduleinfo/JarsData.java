@@ -28,6 +28,7 @@ import com.mastfrog.jarmerge.spi.ClassNameRewriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,17 +49,21 @@ class JarsData {
     final Set<String> coalescedModuleNames = new TreeSet<>();
     final boolean open;
     private final boolean generateUseEntryForProvides;
+    private final Set<String> automaticModulesMerged;
 
-    JarsData(boolean open, boolean generateUseEntryForProvides) {
+    JarsData(boolean open, boolean generateUseEntryForProvides, Set<String> automaticModulesMerged) {
         this.open = open;
         this.generateUseEntryForProvides = generateUseEntryForProvides;
+        this.automaticModulesMerged = automaticModulesMerged;
     }
 
     void write(StringBuilder into) {
+        Set<String> usesWritten = new HashSet<>();
+        Set<String> providesWritten = new HashSet<>();
         ClassNameRewriter rew = ClassNameRewriter.get();
         String lineHead = "\n    ";
         requires.forEach((name, req) -> {
-            if (coalescedModuleNames.contains(req.target())) {
+            if (coalescedModuleNames.contains(req.target()) || automaticModulesMerged.contains(req.target())) {
                 return;
             }
             into.append(lineHead);
@@ -78,16 +83,24 @@ class JarsData {
         }
         into.append('\n');
         provides.forEach((name, req) -> {
-            into.append(lineHead);
-            req.apply(into, rew);
-            if (generateUseEntryForProvides) {
-                into.append(lineHead).append("uses ").append(name).append(';');
+            if (providesWritten.add(name)) {
+                into.append(lineHead);
+                req.apply(into, rew);
+            }
+            String u = canonicalize(name);
+            if (generateUseEntryForProvides && !usesWritten.contains(u)) {
+                usesWritten.add(u);
+                into.append(lineHead).append("uses ").append(u).append(';');
             }
         });
         into.append('\n');
         for (String u : uses) {
-            into.append(lineHead);
-            into.append("uses ").append(canonicalize(u)).append(';');
+            u = canonicalize(u);
+            if ( !usesWritten.contains(u)) {
+                usesWritten.add(u);
+                into.append(lineHead);
+                into.append("uses ").append(u).append(';');
+            }
         }
         if (!open) {
             List<Open> synthetic = new ArrayList<>();

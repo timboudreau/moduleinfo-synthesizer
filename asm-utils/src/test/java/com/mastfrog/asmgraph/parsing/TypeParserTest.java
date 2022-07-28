@@ -168,4 +168,19 @@ public class TypeParserTest {
         assertTrue(result.containsKey("V"));
         assertTrue(result.containsKey("M"));
     }
+    
+    @Test
+    public void testConversion() {
+        String txt = "Lorg/apache/hadoop/fs/RemoteIterator<Lorg/apache/hadoop/fs/LocatedFileStatus;>;";
+        Sequence seq = new Sequence(txt);
+        TypeParser tp = new TypeParser();
+        TypeName res = tp.parse(seq);
+        assertEquals(txt, res.internalName(), () -> {
+            return txt + "\n" + res.internalName() + "\nin\n" + seq;
+        });
+        TypeName nue = res.transform(t -> t.replaceAll("hadoop", "wookies").replaceAll("org/", "urbles/"));
+        System.out.println("NUE: " + nue);
+        String exp2 =  "Lurbles/apache/wookies/fs/RemoteIterator<Lurbles/apache/wookies/fs/LocatedFileStatus;>;";
+        assertEquals(exp2, nue.internalName());
+    }
 }

@@ -31,7 +31,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.objectweb.asm.Type;
 
 /**
  * Borrowed from java-vogon.
@@ -39,6 +38,9 @@ import org.objectweb.asm.Type;
  * @author Tim Boudreau
  */
 final class TypeNameUtils {
+    
+    // Deleteme - this class is mostly unused and should be completely
+    // unused - asm-utils has a more reliable parser for this stuff
 
     private static final Item OPEN_ANGLE = new PunctuationItem('<');
     private static final Item CLOSE_ANGLE = new PunctuationItem('>');
@@ -391,17 +393,4 @@ final class TypeNameUtils {
         }
         return dotEncountered && !isLeadingChar;
     }
-    
-    public static void main(String[] args) {
-        String bad = "<T:Ljava/lang/Object;>(Ljava/util/Collection<TT;>;Ljava/util/Collection<TT;>;)Z";
-        String result = remapNested(bad, Function.identity());
-        
-        System.out.println(bad);
-        System.out.println(result);
-        
-        Type[] types = Type.getArgumentTypes(bad);
-        for (Type t : types) {
-            System.out.println(" * " + t.getClassName());
-        }
     }
-}

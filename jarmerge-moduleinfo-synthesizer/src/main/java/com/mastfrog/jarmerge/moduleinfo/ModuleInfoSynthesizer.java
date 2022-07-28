@@ -32,7 +32,11 @@ import com.mastfrog.jarmerge.spi.JarFilter;
 import com.mastfrog.util.path.UnixPath;
 import com.mastfrog.util.service.ServiceProvider;
 import java.nio.file.Path;
+import static java.util.Collections.emptySet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarEntry;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -41,6 +45,8 @@ import java.util.jar.JarEntry;
 @ServiceProvider(JarFilter.class)
 public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
+    private static final Pattern MODULE_INFO_VERSIONS_PATTERN
+            = Pattern.compile("^META-INF/versions/\\d+/module-info\\.class$");
     /**
      * Module name to use.
      */
@@ -56,6 +62,8 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
      */
     public static final String PROP_CHECK_SERVICE_CONSTRUCTORS
             = "checkServiceConstructors";
+
+    public static final String PROP_UNREQUIRE = "unrequire";
     /**
      * Generate <code>uses</code> statements for all services that are provided.
      */
@@ -75,20 +83,19 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
 
     @Override
     public JarFilter<Coalescer> configureInstance(JarMerge jarMerge) {
-        System.out.println("CONFIGURE ModuleInfoSynthesizer");
         return new ModuleInfoSynthesizer(jarMerge);
     }
 
     @Override
     public int precedence() {
-        return 1;
+        return -10000000;
     }
 
     @Override
     public boolean enabledByDefault() {
         return true;
     }
-    
+
     public boolean generatedUses() {
         if (merge == null) {
             return false;
@@ -172,21 +179,44 @@ public final class ModuleInfoSynthesizer implements JarFilter<Coalescer> {
         if (collector == null) {
             collector = new ModuleInfoCollector(moduleName(), zeroDates, open(),
                     checkServiceConstructors(), generatedUses());
+            collector.unrequire(unrequired());
         }
         return collector;
     }
 
+    Set<String> unrequired() {
+        if (merge == null) {
+            return emptySet();
+        }
+        String val = merge.extensionProperties.get(PROP_UNREQUIRE);
+        if (val != null && !val.isBlank()) {
+            Set<String> result = new HashSet<>();
+            for (String s : val.split(",")) {
+                result.add(s.trim());
+            }
+            return result;
+        }
+        return emptySet();
+    }
+
+    static boolean isModuleInfo(String path) {
+        return "module-info.class".equals(path)
+                || MODULE_INFO_VERSIONS_PATTERN.matcher(path).find();
+    }
+
     @Override
     public synchronized Coalescer coalescer(String path, Path inJar, JarEntry entry, MergeLog log) {
-        if ("module-info.class".equals(entry.getName())) {
-            System.out.println("HAVE MODULE INFO IN " + inJar.getFileName());
+        if (isModuleInfo(entry.getName())) {
             return collector();
         } else {
             if (path.startsWith("META-INF/services")) {
                 Coalescer wrapped = collector().wrap(path, inJar, entry, log);
                 return wrapped;
             } else if (!path.startsWith("META-INF") && path.endsWith(".class") && isPossibleJavaPackage(path)) {
+                System.out.println("MAYBE NOTE " + path);
                 collector().notePackage(path, inJar, entry, log);
+            } else {
+                System.out.println("FALLTHROUGH " + path);
             }
         }
         return null;

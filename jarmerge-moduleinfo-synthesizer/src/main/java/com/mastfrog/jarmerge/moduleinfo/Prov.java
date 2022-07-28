@@ -39,15 +39,15 @@ class Prov extends ModuleEntry<Prov> {
     private final Set<String> implementations = new TreeSet<>();
 
     Prov(Module.ProvidesEntry p) {
-        super(p.getService().toString());
+        super(canonicalize(p.getService().toString()));
         for (ClassName cn : p.getImplementations()) {
             implementations.add(cn.getExternalName());
         }
     }
 
     Prov(String type, String impl) {
-        super(type);
-        this.implementations.add(impl);
+        super(canonicalize(type));
+        this.implementations.add(canonicalize(impl));
     }
 
     @Override

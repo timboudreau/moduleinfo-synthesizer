@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -36,10 +37,12 @@ class ModuleInfoGenerator {
 
     private final List<JarInfo> info;
     private boolean open = true;
+    private final Set<String> automaticModulesMerged;
 
-    public ModuleInfoGenerator(Collection<? extends JarInfo> info) {
+    public ModuleInfoGenerator(Collection<? extends JarInfo> info, Set<String> automaticModulesMerged) {
         this.info = new ArrayList<>(info);
         Collections.sort(this.info);
+        this.automaticModulesMerged = automaticModulesMerged;
     }
 
     ModuleInfoGenerator open() {
@@ -52,7 +55,7 @@ class ModuleInfoGenerator {
     }
 
     public String moduleInfo(String moduleName, boolean generateUses) {
-        JarsData jd = new JarsData(open, generateUses);
+        JarsData jd = new JarsData(open, generateUses, automaticModulesMerged);
         for (JarInfo ji : info) {
             ji.collect(jd);
         }

@@ -153,7 +153,7 @@ public final class ClassRelocatingJarFilter implements JarFilter<Coalescer> {
 
     @Override
     public int precedence() {
-        return 2000;
+        return -2000;
     }
 
     @Override
