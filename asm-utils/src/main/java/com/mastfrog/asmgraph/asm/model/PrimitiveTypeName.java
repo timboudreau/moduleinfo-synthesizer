@@ -17,6 +17,11 @@ public final class PrimitiveTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        return sourceName();
+    }
+
+    @Override
     public String rawName() {
         return Character.toString(type.prefix());
     }

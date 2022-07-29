@@ -20,6 +20,11 @@ public class WildcardTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        return "?";
+    }
+
+    @Override
     public String rawName() {
         return "*";
     }

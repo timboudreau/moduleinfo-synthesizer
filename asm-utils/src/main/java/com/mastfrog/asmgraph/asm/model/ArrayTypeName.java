@@ -18,6 +18,11 @@ public class ArrayTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        return componentType.sourceNameTruncated() + "[]";
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         return componentType.reify(ctx).map(nue -> new ArrayTypeName(nue));
     }

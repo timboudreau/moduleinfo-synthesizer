@@ -18,6 +18,11 @@ public class TypeParameterTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        return name;
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         return ctx.typeOf(name);
     }

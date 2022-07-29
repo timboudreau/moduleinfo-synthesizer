@@ -96,6 +96,22 @@ public class ParameterizedTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(target.sourceNameTruncated());
+        sb.append('<');
+        for (Iterator<TypeName> it = generics.iterator(); it.hasNext();) {
+            TypeName g = it.next();
+            sb.append(g.sourceNameTruncated());
+            if (it.hasNext()) {
+                sb.append(", ");
+            }
+        }
+        sb.append('>');
+        return sb.toString();
+    }
+
+    @Override
     public TypeName transform(Function<String, String> f) {
         TypeName nue = target.transform(f);
         List<TypeName> newGenerics = new ArrayList<>();

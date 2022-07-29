@@ -2,7 +2,9 @@ package com.mastfrog.asmgraph.asm.model;
 
 import com.mastfrog.util.strings.Strings;
 import java.util.Collection;
+import static java.util.Collections.emptySet;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -64,6 +66,37 @@ public enum Access {
         for (Access a : values()) {
             if (a.matches(access)) {
                 result.add(a);
+            }
+        }
+        return result;
+    }
+
+    public static String toParseableString(Set<Access> set) {
+        if (set.isEmpty()) {
+            return "-";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Iterator<Access> it = set.iterator(); it.hasNext();) {
+            Access a = it.next();
+            sb.append(a.toString());
+            if (it.hasNext()) {
+                sb.append('-');
+            }
+        }
+        return sb.toString();
+    }
+
+    public static Set<Access> parse(String s) {
+        if ("/".equals(s)) {
+            return emptySet();
+        }
+        Set<Access> result = EnumSet.noneOf(Access.class);
+        Access[] vals = values();
+        for (String part : s.split("-")) {
+            for (Access a : vals) {
+                if (part.equals(a.toString())) {
+                    result.add(a);
+                }
             }
         }
         return result;

@@ -41,6 +41,20 @@ public abstract class TypeName implements Comparable<TypeName> {
     public abstract String sourceName();
 
     /**
+     * Returns the dot delimited type name, unless the package is
+     * <code>java.lang</code>, in which case the package is omitted.
+     *
+     * @return A name
+     */
+    public String sourceNameTruncated() {
+        String result = sourceName();
+        if (result.startsWith("java.lang.")) {
+            result = result.substring("java.lang.".length());
+        }
+        return result;
+    }
+
+    /**
      * Get the kind of type name this name instance represents, such as an
      * array, an object type, an object type with type parameters, etc.
      *
@@ -128,7 +142,7 @@ public abstract class TypeName implements Comparable<TypeName> {
 
     /**
      * Internal implementation method for instances to call their children.
-     * 
+     *
      * @param parent The parent, if any
      * @param nesting The nesting relationship this type has to its parent
      * @param depth The nesting depth
@@ -152,9 +166,9 @@ public abstract class TypeName implements Comparable<TypeName> {
     public abstract void visitTypeNames(Consumer<TypeName> c);
 
     /**
-     * Determine if this TypeName is a raw, bottom-level type name (no leading
-     * L or trailing ; to its internal name).
-     * 
+     * Determine if this TypeName is a raw, bottom-level type name (no leading L
+     * or trailing ; to its internal name).
+     *
      * @return True if this is a raw type name
      */
     public boolean isRawTypeName() {

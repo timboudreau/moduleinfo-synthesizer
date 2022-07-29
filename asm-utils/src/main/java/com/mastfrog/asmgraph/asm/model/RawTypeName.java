@@ -60,6 +60,14 @@ public final class RawTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        if (rawName.startsWith("java/lang/")) {
+            return rawName.substring("java/lang/".length());
+        }
+        return sourceName();
+    }
+
+    @Override
     public RawTypeName transform(Function<String, String> f) {
         String result = f.apply(rawName);
         if (result == null || result.equals(rawName)) {

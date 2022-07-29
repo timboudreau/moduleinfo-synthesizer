@@ -20,6 +20,16 @@ public class CaptureTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        String sn = of.sourceName();
+        String snt = of.sourceNameTruncated();
+        if (snt.equals(sn)) {
+            return sourceName();
+        }
+        return new CaptureTypeName(captureType, TypeName.simpleName(snt)).sourceName();
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         return of.reify(ctx).map(nue -> new CaptureTypeName(captureType, nue));
     }
