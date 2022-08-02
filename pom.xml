@@ -91,6 +91,11 @@
                     <configuration>
                         <serverId>ossrh</serverId>
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <!-- Because we have more than one group id here, if we do not
+                             disable local staging, staging is deferred to the last
+                             project - which is a test project that the nexus plugin
+                             is entirely disabled for --> 
+                        <skipLocalStaging>true</skipLocalStaging>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
                     </configuration>
