@@ -22,11 +22,11 @@ import java.util.Set;
  */
 public final class ClassRecord implements ClassInfo {
 
-    final int version;
-    final int access;
-    final String name;
-    final String signature;
-    final String superName;
+    public final int version;
+    public final int access;
+    public final String name;
+    public final String signature;
+    public final String superName;
     final String[] interfaces;
 
     public ClassRecord(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -36,6 +36,11 @@ public final class ClassRecord implements ClassInfo {
         this.signature = signature;
         this.superName = superName;
         this.interfaces = interfaces;
+    }
+
+    public String[] interfaceStrings() {
+        return interfaces == null || interfaces.length == 0 ? new String[0]
+                : Arrays.copyOf(interfaces, interfaces.length);
     }
 
     @Override
@@ -75,9 +80,38 @@ public final class ClassRecord implements ClassInfo {
         return names;
     }
 
+    private String signatureString() {
+        // The signature may e null, but for consistency, we should synthesize
+        // one, so code can have one way of obtaining it.
+        if (signature == null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(toSignatureForm(name));
+            if (superName != null) {
+                sb.append(toSignatureForm(superName));
+            }
+            if (interfaces != null) {
+                for (String i : interfaces) {
+                    sb.append(toSignatureForm(i));
+                }
+            }
+            return sb.toString();
+        }
+        return signature;
+    }
+
+    private static String toSignatureForm(String s) {
+        if (s == null) {
+            return "";
+        }
+        if (!s.endsWith(";")) {
+            s = "L" + s + ";";
+        }
+        return s;
+    }
+
     @Override
     public ClassSignature signature() {
-        return new ClassSignatureParser().parse(new Sequence(signature));
+        return new ClassSignatureParser().parse(new Sequence(signatureString()));
     }
 
 }

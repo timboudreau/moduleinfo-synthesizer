@@ -18,6 +18,25 @@ public class ArrayTypeName extends TypeName {
     }
 
     @Override
+    public String javaPackage() {
+        return componentType.javaPackage();
+    }
+
+    @Override
+    public String simpleName() {
+        return componentType.simpleName() + "[]";
+    }
+
+    @Override
+    public TypeName rawName() {
+        TypeName result = componentType.rawName();
+        if (result == componentType) {
+            return this;
+        }
+        return new ArrayTypeName(result);
+    }
+
+    @Override
     public String sourceNameTruncated() {
         return componentType.sourceNameTruncated() + "[]";
     }
@@ -28,8 +47,9 @@ public class ArrayTypeName extends TypeName {
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
-        componentType.accept(Optional.of(this), TypeVisitor.TypeNesting.ARRAY_COMPONENT, depth, vis);
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
+        componentType.accept(Optional.of(this), semanticDepth + 1,
+                TypeVisitor.TypeNesting.ARRAY_COMPONENT, depth, vis);
     }
 
     public boolean isPrimitiveArray() {
@@ -51,8 +71,8 @@ public class ArrayTypeName extends TypeName {
     }
 
     @Override
-    public String rawName() {
-        return '[' + componentType.rawName();
+    public String nameBase() {
+        return '[' + componentType.nameBase();
     }
 
     @Override
@@ -63,12 +83,12 @@ public class ArrayTypeName extends TypeName {
     @Override
     public String internalName() {
         if (isPrimitiveArray()) {
-            return rawName();
+            return nameBase();
         }
         if (componentType.kind().canTakeGenerics() || componentType.kind() == TYPE_PARAMETER || componentType.kind().isObject()) {
-            return rawName() + ";";
+            return nameBase() + ";";
         }
-        return rawName();
+        return nameBase();
     }
 
     @Override

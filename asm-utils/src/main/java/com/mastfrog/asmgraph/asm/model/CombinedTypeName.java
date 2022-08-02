@@ -25,6 +25,17 @@ public class CombinedTypeName extends TypeName {
     }
 
     @Override
+    public TypeName rawName() {
+        return contents.get(0);
+    }
+
+    @Override
+    public String javaPackage() {
+        // Hmm...
+        return contents.get(0).javaPackage();
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         List<TypeName> nue = new ArrayList<>(contents.size());
         for (TypeName tn : contents) {
@@ -37,10 +48,10 @@ public class CombinedTypeName extends TypeName {
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
         Optional<TypeName> me = Optional.of(this);
         for (TypeName ct : contents) {
-            ct.accept(me, TypeVisitor.TypeNesting.PEER, depth, vis);
+            ct.accept(me, semanticDepth + 1, TypeVisitor.TypeNesting.PEER, depth, vis);
         }
     }
 
@@ -57,7 +68,7 @@ public class CombinedTypeName extends TypeName {
     }
 
     @Override
-    public String rawName() {
+    public String nameBase() {
         StringBuilder sb = new StringBuilder();
         for (TypeName t : contents) {
             sb.append(t);
@@ -73,6 +84,30 @@ public class CombinedTypeName extends TypeName {
                 sb.append(" & ");
             }
             sb.append(tn.sourceName());
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String simpleName() {
+        StringBuilder sb = new StringBuilder();
+        for (TypeName tn : contents) {
+            if (sb.length() > 0) {
+                sb.append(" & ");
+            }
+            sb.append(tn.simpleName());
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String sourceNameTruncated() {
+        StringBuilder sb = new StringBuilder();
+        for (TypeName tn : contents) {
+            if (sb.length() > 0) {
+                sb.append(" & ");
+            }
+            sb.append(tn.sourceNameTruncated());
         }
         return sb.toString();
     }

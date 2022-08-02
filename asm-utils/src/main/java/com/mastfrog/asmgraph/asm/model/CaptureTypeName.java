@@ -1,6 +1,7 @@
 package com.mastfrog.asmgraph.asm.model;
 
 import com.mastfrog.asmgraph.asm.model.TypeVisitor.TypeNesting;
+import static com.mastfrog.asmgraph.asm.model.TypeVisitor.TypeNesting.APPLY_CAPTURE;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -20,6 +21,16 @@ public class CaptureTypeName extends TypeName {
     }
 
     @Override
+    public TypeName rawName() {
+        return of;
+    }
+
+    @Override
+    public String javaPackage() {
+        return of.javaPackage();
+    }
+
+    @Override
     public String sourceNameTruncated() {
         String sn = of.sourceName();
         String snt = of.sourceNameTruncated();
@@ -33,10 +44,10 @@ public class CaptureTypeName extends TypeName {
     public Optional<TypeName> reify(GenericsContext ctx) {
         return of.reify(ctx).map(nue -> new CaptureTypeName(captureType, nue));
     }
-    
+
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
-        of.accept(Optional.of(this), TypeNesting.APPLY_CAPTURE, depth, vis);
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
+        of.accept(Optional.of(this), semanticAddition(), APPLY_CAPTURE, depth, vis);
     }
 
     @Override
@@ -51,13 +62,18 @@ public class CaptureTypeName extends TypeName {
     }
 
     @Override
-    public String rawName() {
+    public String nameBase() {
         return captureType.prefix() + of.internalName();
     }
 
     @Override
     public String sourceName() {
         return "? " + captureType.sourceName() + " " + of.sourceName();
+    }
+
+    @Override
+    public String simpleName() {
+        return "? " + captureType.sourceName() + " " + of.simpleName();
     }
 
     @Override

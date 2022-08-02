@@ -40,14 +40,64 @@ public class InnerClassGenericsTypeName extends TypeName {
         this.firstSection = firstSection;
         this.innerType = innerType;
     }
-    
+
     public String tail() {
         return innerType;
     }
 
     @Override
-    public String rawName() {
-        return firstSection.rawName() + '.' + innerType;
+    public TypeName rawName() {
+        TypeName tn = firstSection.rawName();
+        if (!tn.equals(firstSection)) {
+            return new InnerClassGenericsTypeName(tn, innerType);
+        }
+        return this;
+    }
+
+    @Override
+    public String sourceNameTruncated() {
+        String sn = firstSection.sourceNameTruncated();
+        String full = firstSection.sourceName();
+        if (full.equals(sn)) {
+            return full + "." + innerType;
+        }
+        return sn + "." + innerType;
+    }
+
+    @Override
+    public boolean isSemantic() {
+        return true;
+    }
+
+    @Override
+    public boolean isRawTypeName() {
+        return firstSection.isRawTypeName();
+    }
+
+    @Override
+    public boolean isFullySpecified() {
+        return firstSection.isFullySpecified();
+    }
+
+    @Override
+    public Optional<TypeName> reify(GenericsContext ctx) {
+        return firstSection.reify(ctx).map(
+                tn -> new InnerClassGenericsTypeName(tn, innerType));
+    }
+
+    @Override
+    public String javaPackage() {
+        return firstSection.javaPackage();
+    }
+
+    @Override
+    public String simpleName() {
+        return innerType;
+    }
+
+    @Override
+    public String nameBase() {
+        return firstSection.nameBase() + '.' + innerType;
     }
 
     @Override
@@ -62,12 +112,14 @@ public class InnerClassGenericsTypeName extends TypeName {
 
     @Override
     public TypeName transform(Function<String, String> f) {
-        return new InnerClassGenericsTypeName(firstSection.transform(f), f.apply(innerType));
+        return new InnerClassGenericsTypeName(firstSection.transform(f),
+                f.apply(innerType));
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
-        firstSection.accept(Optional.of(this), TypeVisitor.TypeNesting.INNER_CLASS_OF, depth, vis);
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
+        firstSection.accept(Optional.of(this), semanticDepth + 1, TypeVisitor.TypeNesting.INNER_CLASS_OF,
+                depth, vis);
     }
 
     @Override

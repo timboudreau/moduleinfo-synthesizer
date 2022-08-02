@@ -26,6 +26,14 @@ public enum Access {
     STRICT(0x0800),
     SYNTHETIC(0x1000);
 
+    public static int flagsFor(Set<Access> access) {
+        int result = 0;
+        for (Access a : access) {
+            result |= a.flags;
+        }
+        return result;
+    }
+
     private final int flags;
 
     Access(int flags) {

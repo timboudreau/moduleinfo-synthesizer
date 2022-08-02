@@ -18,18 +18,18 @@ public class ParameterizedTypeNameTest {
         PrefixedTypeName pt = new PrefixedTypeName(TypePrefix.OBJECT, RawTypeName.of("java/lang/Iterable"));
 
         assertEquals("Ljava/lang/Iterable;", pt.internalName());
-        assertEquals("Ljava/lang/Iterable", pt.rawName());
+        assertEquals("Ljava/lang/Iterable", pt.nameBase());
         assertEquals("java.lang.Iterable", pt.sourceName());
 
         PrefixedTypeName string = new PrefixedTypeName(TypePrefix.OBJECT, RawTypeName.of("java/lang/String"));
         assertEquals("Ljava/lang/String;", string.internalName());
-        assertEquals("Ljava/lang/String", string.rawName());
+        assertEquals("Ljava/lang/String", string.nameBase());
         assertEquals("java.lang.String", string.sourceName());
 
         ParameterizedTypeName par = new ParameterizedTypeName(pt, singletonList(string));
 
         assertEquals("java.lang.Iterable<java.lang.String>", par.sourceName());
-        assertEquals("Ljava/lang/Iterable<Ljava/lang/String;>", par.rawName());
+        assertEquals("Ljava/lang/Iterable<Ljava/lang/String;>", par.nameBase());
         assertEquals("Ljava/lang/Iterable<Ljava/lang/String;>;", par.internalName());
     }
 

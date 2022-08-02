@@ -20,12 +20,22 @@ public class WildcardTypeName extends TypeName {
     }
 
     @Override
+    public String simpleName() {
+        return "?";
+    }
+
+    @Override
+    public String javaPackage() {
+        return "";
+    }
+
+    @Override
     public String sourceNameTruncated() {
         return "?";
     }
 
     @Override
-    public String rawName() {
+    public String nameBase() {
         return "*";
     }
 
@@ -55,7 +65,7 @@ public class WildcardTypeName extends TypeName {
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
         // do nothing
     }
 }

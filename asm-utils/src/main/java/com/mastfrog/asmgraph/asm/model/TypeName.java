@@ -29,7 +29,7 @@ public abstract class TypeName implements Comparable<TypeName> {
      *
      * @return A string
      */
-    public abstract String rawName();
+    public abstract String nameBase();
 
     /**
      * Get the representation of this type name that would be used in source
@@ -39,6 +39,32 @@ public abstract class TypeName implements Comparable<TypeName> {
      * code
      */
     public abstract String sourceName();
+
+    public abstract String simpleName();
+
+    public String xsimpleName() {
+        String nm = sourceName();
+        int genIx = nm.indexOf('<');
+        if (genIx > 0) {
+            nm = nm.substring(0, genIx);
+        }
+        int ix = nm.lastIndexOf('.');
+        if (ix > 0 && ix < nm.length() - 1) {
+            return nm.substring(ix + 1, nm.length());
+        }
+        return nm;
+    }
+
+    public abstract String javaPackage();
+
+    /**
+     * Get the type name omitting any generics.
+     *
+     * @return A type name
+     */
+    public TypeName rawName() {
+        return this;
+    }
 
     /**
      * Returns the dot delimited type name, unless the package is
@@ -69,7 +95,7 @@ public abstract class TypeName implements Comparable<TypeName> {
      * @return
      */
     public String internalName() {
-        String val = rawName();
+        String val = nameBase();
         return notNull("rawName on " + getClass().getSimpleName(), val);
     }
 
@@ -104,7 +130,7 @@ public abstract class TypeName implements Comparable<TypeName> {
      */
     public boolean isFullySpecified() {
         Bool paramsFound = Bool.create();
-        accept((par, nest, type, depth) -> {
+        accept((par, semDepth, nest, type, depth) -> {
             paramsFound.or(type.kind() == TypeKind.TYPE_PARAMETER);
         });
         return !paramsFound.getAsBoolean();
@@ -116,7 +142,7 @@ public abstract class TypeName implements Comparable<TypeName> {
      * @param vis
      */
     public final void accept(TypeVisitor vis) {
-        accept(empty(), TypeNesting.SELF, 0, vis);
+        accept(empty(), 0, TypeNesting.SELF, 0, vis);
     }
 
     /**
@@ -148,9 +174,13 @@ public abstract class TypeName implements Comparable<TypeName> {
      * @param depth The nesting depth
      * @param vis A visitor
      */
-    protected final void accept(Optional<TypeName> parent, TypeNesting nesting, int depth, TypeVisitor vis) {
-        vis.visit(parent, nesting, this, depth);
-        visitChildren(depth + 1, vis);
+    protected final void accept(Optional<TypeName> parent, int semDepth, TypeNesting nesting, int depth, TypeVisitor vis) {
+        vis.visit(parent, semDepth, nesting, this, depth);
+        visitChildren(depth + 1, vis, semDepth + semanticAddition());
+    }
+
+    int semanticAddition() {
+        return isSemantic() ? 1 : 0;
     }
 
     /**
@@ -161,7 +191,7 @@ public abstract class TypeName implements Comparable<TypeName> {
      * @param depth The depth at which children occur
      * @param vis A visitor
      */
-    protected abstract void visitChildren(int depth, TypeVisitor vis);
+    protected abstract void visitChildren(int depth, TypeVisitor vis, int semdepth);
 
     public abstract void visitTypeNames(Consumer<TypeName> c);
 
@@ -195,7 +225,7 @@ public abstract class TypeName implements Comparable<TypeName> {
 
     @Override
     public int compareTo(TypeName tn) {
-        return rawName().compareTo(tn.rawName());
+        return rawName().sourceName().compareTo(tn.rawName().sourceName());
     }
 
     @Override
@@ -248,7 +278,7 @@ public abstract class TypeName implements Comparable<TypeName> {
         private final Map<Integer, String> indents = new HashMap<>();
 
         @Override
-        public void visit(Optional<TypeName> parent, TypeNesting nesting, TypeName target, int depth) {
+        public void visit(Optional<TypeName> parent, int semanticDepth, TypeNesting nesting, TypeName target, int depth) {
             onNewLine(sb -> {
                 sb.append(depthString(depth));
                 sb.append(target.internalName())

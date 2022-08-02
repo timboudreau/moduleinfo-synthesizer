@@ -55,7 +55,7 @@ public enum TypePrefix {
             case ARRAY:
                 return sourceName.sourceName() + "[]";
             case OBJECT:
-                String base = sourceName.rawName().replace('/', '.').replace('$', '.');
+                String base = sourceName.nameBase().replace('/', '.').replace('$', '.');
                 if (parameters.length > 0) {
                     base += "<";
                     for (int i = 0; i < parameters.length; i++) {

@@ -192,6 +192,9 @@ final class ClassProcessorDriver {
                         methodCoercion, methodCoercionTargetSignature, otherSignature,
                         lambdaName, lambdaOwner, tag, handle.isInterface());
                 invokeDynamics.add(rec);
+            } else if ("makeConcatWithConstants".equals(bootstrapMethodHandle.getName())) {
+                // compiled string concatenation with constants - nothing will be called
+                // we can do anything useful with
             } else {
                 System.out.println("NOT METAFACTORY: " + bootstrapMethodHandle.getName());
                 System.out.println(curr.name() + " " + method.name

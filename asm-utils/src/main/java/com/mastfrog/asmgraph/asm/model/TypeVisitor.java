@@ -9,7 +9,7 @@ import java.util.Optional;
  */
 public interface TypeVisitor {
 
-    void visit(Optional<TypeName> parent, TypeNesting nesting, TypeName target, int depth);
+    void visit(Optional<TypeName> parent, int semanticDepth, TypeNesting nesting, TypeName target, int depth);
 
     /**
      * The purpose for which a TypeName is nested underneath another.

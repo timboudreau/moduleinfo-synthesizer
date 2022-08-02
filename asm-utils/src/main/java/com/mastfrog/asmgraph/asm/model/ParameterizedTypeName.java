@@ -27,6 +27,30 @@ public class ParameterizedTypeName extends TypeName {
     }
 
     @Override
+    public String simpleName() {
+        StringBuilder sb = new StringBuilder(target.simpleName());
+        if (!generics.isEmpty()) {
+            sb.append('<');
+            for (Iterator<TypeName> it = generics.iterator(); it.hasNext();) {
+                TypeName tn = it.next();
+                sb.append(tn.simpleName());
+            }
+            sb.append('>');
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String javaPackage() {
+        return target.javaPackage();
+    }
+
+    @Override
+    public TypeName rawName() {
+        return target.rawName();
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         TypeName nue = target.reify(ctx).orElse(target);
         List<TypeName> newGenerics = new ArrayList<>(generics.size());
@@ -40,11 +64,11 @@ public class ParameterizedTypeName extends TypeName {
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
         Optional<TypeName> me = Optional.of(this);
-        target.accept(me, TypeNesting.SELF, depth, vis);
+        target.accept(me, semanticDepth, TypeNesting.SELF, depth, vis);
         generics.forEach(g -> {
-            g.accept(me, TypeNesting.TYPE_PARAMETER, depth, vis);
+            g.accept(me, semanticDepth + 1, TypeNesting.TYPE_PARAMETER, depth, vis);
         });
     }
 
@@ -63,9 +87,9 @@ public class ParameterizedTypeName extends TypeName {
     }
 
     @Override
-    public String rawName() {
+    public String nameBase() {
         StringBuilder sb = new StringBuilder();
-        sb.append(target.rawName());
+        sb.append(target.nameBase());
         sb.append('<');
         for (TypeName g : generics) {
             sb.append(g.internalName());
@@ -76,7 +100,7 @@ public class ParameterizedTypeName extends TypeName {
 
     @Override
     public String internalName() {
-        return rawName() + ";";
+        return nameBase() + ";";
     }
 
     @Override

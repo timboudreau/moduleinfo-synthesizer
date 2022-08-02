@@ -260,6 +260,17 @@ public class Sequence {
         return this;
     }
 
+    public boolean consumeIf(String what) {
+        if (isDone()) {
+            return false;
+        }
+        if (text.indexOf(what, position) == 0) {
+            position += what.length();
+            return true;
+        }
+        return false;
+    }
+
     public boolean consumeIf(char c) {
         if (curr() == c) {
             consume();
@@ -283,8 +294,8 @@ public class Sequence {
         }
         return text.charAt(position - 1);
     }
-    
+
     public void backup() {
-        position = max(0, position-1);
+        position = max(0, position - 1);
     }
 }
