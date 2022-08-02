@@ -23,6 +23,21 @@ public class PrefixedTypeName extends TypeName {
     }
 
     @Override
+    public String sourceNameTruncated() {
+        return new PrefixedTypeName(prefix, TypeName.simpleName(child.sourceNameTruncated().replace('.', '/'))).sourceName();
+    }
+
+    @Override
+    public TypeName rawName() {
+        return child;
+    }
+
+    @Override
+    public String javaPackage() {
+        return child.javaPackage();
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         return child.reify(ctx).map(nue -> new PrefixedTypeName(prefix, nue));
     }
@@ -37,8 +52,18 @@ public class PrefixedTypeName extends TypeName {
     }
 
     @Override
-    public String rawName() {
-        return prefix.prefix() + child.rawName();
+    public String nameBase() {
+        return prefix.prefix() + child.nameBase();
+    }
+
+    @Override
+    public String simpleName() {
+        switch (prefix) {
+            case ARRAY:
+                return child.simpleName() + "[]";
+            default:
+                return child.simpleName();
+        }
     }
 
     @Override
@@ -71,7 +96,7 @@ public class PrefixedTypeName extends TypeName {
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
-        child.accept(of(this), TypeNesting.WRAPPED, depth, vis);
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
+        child.accept(of(this), semanticDepth, TypeNesting.WRAPPED, depth, vis);
     }
 }

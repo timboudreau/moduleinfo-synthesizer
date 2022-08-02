@@ -1,5 +1,7 @@
 package com.mastfrog.asmgraph.asm.model;
 
+import com.mastfrog.util.strings.Strings;
+import static com.mastfrog.util.strings.Strings.capitalize;
 import java.util.Optional;
 import static java.util.Optional.*;
 
@@ -19,6 +21,10 @@ public enum TypeKind {
 
     public String stringPrefix() {
         return prefix().map(pfx -> Character.toString(pfx.prefix())).orElse("");
+    }
+
+    public String toString() {
+        return capitalize(name().replace('_', ' ').toLowerCase());
     }
     
     public boolean isObject() {

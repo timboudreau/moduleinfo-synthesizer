@@ -17,7 +17,22 @@ public final class PrimitiveTypeName extends TypeName {
     }
 
     @Override
-    public String rawName() {
+    public String sourceNameTruncated() {
+        return sourceName();
+    }
+
+    @Override
+    public String simpleName() {
+        return type.name().toLowerCase();
+    }
+
+    @Override
+    public String javaPackage() {
+        return "";
+    }
+
+    @Override
+    public String nameBase() {
         return Character.toString(type.prefix());
     }
 
@@ -42,7 +57,7 @@ public final class PrimitiveTypeName extends TypeName {
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
         // do nothing
     }
 }

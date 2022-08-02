@@ -26,13 +26,37 @@ public class InterfaceType extends TypeName {
     }
 
     @Override
+    public String javaPackage() {
+        return inner.javaPackage();
+    }
+
+    @Override
+    public String simpleName() {
+        return inner.simpleName();
+    }
+
+    @Override
+    public TypeName rawName() {
+        TypeName tn = inner.rawName();
+        if (inner == tn) {
+            return this;
+        }
+        return new InterfaceType(tn);
+    }
+
+    @Override
+    public String sourceNameTruncated() {
+        return inner.sourceNameTruncated();
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         return inner.reify(ctx).map(nue -> new InterfaceType(nue));
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
-        inner.accept(Optional.of(this), TypeVisitor.TypeNesting.WRAPPED, depth, vis);
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
+        inner.accept(Optional.of(this), semanticDepth, TypeVisitor.TypeNesting.WRAPPED, depth, vis);
     }
 
     public boolean isSemantic() {
@@ -52,8 +76,8 @@ public class InterfaceType extends TypeName {
     }
 
     @Override
-    public String rawName() {
-        return ":" + inner.rawName();
+    public String nameBase() {
+        return ":" + inner.nameBase();
     }
 
     @Override
@@ -63,7 +87,7 @@ public class InterfaceType extends TypeName {
 
     @Override
     public String internalName() {
-        String n = rawName();
+        String n = nameBase();
         if (!n.endsWith(";")) {
             return n + ";";
         }

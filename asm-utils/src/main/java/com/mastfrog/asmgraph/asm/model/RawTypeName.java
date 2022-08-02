@@ -60,6 +60,23 @@ public final class RawTypeName extends TypeName {
     }
 
     @Override
+    public String javaPackage() {
+        int ix = rawName.lastIndexOf('/');
+        if (ix >= 0 || ix == rawName.length() - 1) {
+            return rawName.substring(0, ix).replace('/', '.');
+        }
+        return "";
+    }
+
+    @Override
+    public String sourceNameTruncated() {
+        if (rawName.startsWith("java/lang/")) {
+            return rawName.substring("java/lang/".length());
+        }
+        return sourceName();
+    }
+
+    @Override
     public RawTypeName transform(Function<String, String> f) {
         String result = f.apply(rawName);
         if (result == null || result.equals(rawName)) {
@@ -69,13 +86,22 @@ public final class RawTypeName extends TypeName {
     }
 
     @Override
-    public String rawName() {
+    public String simpleName() {
+        int ix = rawName.lastIndexOf('/');
+        if (ix < 0 || ix == rawName.length() - 1) {
+            return rawName;
+        }
+        return rawName.substring(ix + 1).replace('$', '.');
+    }
+
+    @Override
+    public String nameBase() {
         return rawName;
     }
 
     @Override
     public String internalName() {
-        return rawName();
+        return nameBase();
     }
 
     @Override
@@ -92,13 +118,13 @@ public final class RawTypeName extends TypeName {
     public TypeKind kind() {
         return TypeKind.SIMPLE_OBJECT_TYPE;
     }
-    
+
     public boolean isRawTypeName() {
         return false;
     }
 
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
+    protected void visitChildren(int depth, TypeVisitor vis, int semanticDepth) {
         // do nothing
     }
 }

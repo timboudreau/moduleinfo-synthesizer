@@ -18,17 +18,32 @@ public class TypeParameterTypeName extends TypeName {
     }
 
     @Override
+    public String simpleName() {
+        return name;
+    }
+
+    @Override
+    public String javaPackage() {
+        return "";
+    }
+
+    @Override
+    public String sourceNameTruncated() {
+        return name;
+    }
+
+    @Override
     public Optional<TypeName> reify(GenericsContext ctx) {
         return ctx.typeOf(name);
     }
     
     @Override
-    protected void visitChildren(int depth, TypeVisitor vis) {
+    protected void visitChildren(int depth, TypeVisitor vis, int sem) {
         // do nothing
     }
 
     @Override
-    public String rawName() {
+    public String nameBase() {
         return 'T' + name;
     }
 
@@ -39,7 +54,7 @@ public class TypeParameterTypeName extends TypeName {
 
     @Override
     public String internalName() {
-        return rawName() + ';';
+        return nameBase() + ';';
     }
 
     @Override

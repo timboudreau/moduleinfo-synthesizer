@@ -33,6 +33,11 @@ public final class TypeParser implements MiniParser<TypeName> {
 
     @Override
     public TypeName parse(Sequence text) {
+        if (text.consumeIf("module-info")) {
+            return TypeName.simpleName("module-info");
+        } else if (text.consumeIf("Lmodule-info;")) {
+            return TypeName.referenceName("module-info");
+        }
         char curr = text.curr();
         switch (curr) {
             case ':':
@@ -131,7 +136,8 @@ public final class TypeParser implements MiniParser<TypeName> {
             result = appendInnerGenerics(this, result, text);
         }
         if (result == null) {
-            throw new IllegalStateException("Did not find a type name in " + text);
+            throw new IllegalStateException("Did not find a type name in"
+                    + "\n" + text);
         }
         return result;
     }
