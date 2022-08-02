@@ -99,6 +99,7 @@
                         <!-- We actually do not want to publish any of these -->
                         <skipStaging>true</skipStaging>
                         <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
+                        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
                     </configuration>
                 </plugin>
 
