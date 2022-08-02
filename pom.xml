@@ -29,11 +29,11 @@
         <mastfrog.version>2.8.3</mastfrog.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <maven-merge-configuration-plugin.version>${mastfrog.version}.1</maven-merge-configuration-plugin.version>
+        <maven-merge-configuration-plugin.version>${mastfrog.version}.2</maven-merge-configuration-plugin.version>
         <moduleinfo-synthesizer-parent.version>1.0.2</moduleinfo-synthesizer-parent.version>
         <netbeans.version>RELEASE126</netbeans.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <smart-jar-merge.version>${mastfrog.version}.2</smart-jar-merge.version>
+        <smart-jar-merge.version>${mastfrog.version}.3</smart-jar-merge.version>
     </properties>
 
     <build>
