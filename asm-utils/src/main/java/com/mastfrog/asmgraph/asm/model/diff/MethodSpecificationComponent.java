@@ -87,7 +87,7 @@ public enum MethodSpecificationComponent {
                         double maxLen = max(newLen, oldLen);
                         double minLen = min(newLen, oldLen);
                         // So zero args to one is not 0/1
-                        sum += 2 * (1D + (maxLen - minLen) / (maxLen + 1D));
+                        sum += maxLen - minLen;
                     }
 
                     sum += typeNameListDistance(asig.arguments(), bsig.arguments());
@@ -97,13 +97,15 @@ public enum MethodSpecificationComponent {
                     continue;
                 case NAME:
                     // Weight name more heavily
-                    sum += levenshteinDistance(a.name(), b.name(), false) * 2;
+                    double ls = levenshteinDistance(a.name(), b.name(), false);
+                    sum += ls * ls;
                     continue;
             }
-            sum += levenshteinDistance(c.get(a).toString(),
+            sum += LevenshteinDistance.score(c.get(a).toString(),
                     c.get(b).toString(), false);
         }
-        return sum / compCount;
+        double result = sum / compCount;
+        return sum;
     }
 
     private static double typeNameListDistance(List<TypeName> a, List<TypeName> b) {
@@ -146,7 +148,10 @@ public enum MethodSpecificationComponent {
     }
 
     private static double typeNameDistance(TypeName a, TypeName b) {
-        return levenshteinDistance(a.simpleName(), b.simpleName(), false);
+//        if (true) {
+//            return a.equals(b) ? 0 : 1;
+//        }
+        return LevenshteinDistance.score(a.simpleName(), b.simpleName(), false);
     }
 
     /**

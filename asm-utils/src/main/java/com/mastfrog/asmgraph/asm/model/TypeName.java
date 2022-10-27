@@ -252,6 +252,16 @@ public abstract class TypeName implements Comparable<TypeName> {
         return ((TypeName) o).internalName().equals(internalName());
     }
 
+    public boolean isTypeParameter() {
+        Bool result = Bool.create(true);
+        accept((Optional<TypeName> parent, int semanticDepth, TypeNesting nesting, TypeName target, int depth) -> {
+            if (target.isSemantic() && target.kind() != TypeKind.TYPE_PARAMETER) {
+                result.set(false);
+            }
+        });
+        return result.getAsBoolean();
+    }
+
     private int hc;
 
     @Override

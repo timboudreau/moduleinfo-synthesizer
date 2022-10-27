@@ -26,14 +26,14 @@
         <asm.version>9.3</asm.version>
         <cactus.version>1.5.18</cactus.version>
         <junit5.version>5.8.2</junit5.version>
-        <mastfrog.version>2.8.3</mastfrog.version>
+        <mastfrog.version>2.9.0</mastfrog.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven-merge-configuration-plugin.version>${mastfrog.version}.2</maven-merge-configuration-plugin.version>
         <moduleinfo-synthesizer-parent.version>1.0.2</moduleinfo-synthesizer-parent.version>
-        <netbeans.version>RELEASE126</netbeans.version>
+        <netbeans.version>RELEASE140</netbeans.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <smart-jar-merge.version>${mastfrog.version}.3</smart-jar-merge.version>
+        <smart-jar-merge.version>${mastfrog.version}</smart-jar-merge.version>
     </properties>
 
     <build>
